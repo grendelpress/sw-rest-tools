@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "netlify dev",
+    "dev": "netlify dev --offline",
     "build": "echo 'No build step needed for static site'",
     "deploy": "netlify deploy --prod"
   },
