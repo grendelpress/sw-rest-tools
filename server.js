@@ -68,13 +68,13 @@ app.post('/generate-messages-csv', async (req, res) => {
     const messages = await client.messages.list();
     
     const data = messages.map((record) => ({
-      messageSid: record.sid,
-      from: record.from,
-      to: record.to,
-      dateSent: record.dateSent ? record.dateSent.toISOString() : '',
-      status: record.status,
-      direction: record.direction,
-      price: record.price || '0.00'
+      messageSid: record.sid || '',
+      from: record.from || '',
+      to: record.to || '',
+      dateSent: record.dateSent ? record.dateSent.toString() : '',
+      status: record.status || '',
+      direction: record.direction || '',
+      price: record.price || ''
     }));
 
     // Create CSV content
@@ -82,13 +82,13 @@ app.post('/generate-messages-csv', async (req, res) => {
     const csvContent = [
       headers.join(','),
       ...data.map(row => [
-        row.messageSid,
-        row.from,
-        row.to,
-        row.dateSent,
-        row.status,
-        row.direction,
-        row.price
+        `"${row.messageSid}"`,
+        `"${row.from}"`,
+        `"${row.to}"`,
+        `"${row.dateSent}"`,
+        `"${row.status}"`,
+        `"${row.direction}"`,
+        `"${row.price}"`
       ].join(','))
     ].join('\n');
 
