@@ -44,7 +44,7 @@ document.querySelectorAll('.api-link').forEach(link => {
         status.classList.remove('hidden');
         
         try {
-            const csvResponse = await fetch(link.dataset.endpoint, {
+            const csvResponse = await fetch(`/.netlify/functions${link.dataset.endpoint}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

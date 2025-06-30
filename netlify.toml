@@ -1,0 +1,7 @@
+[build]
+functions = "netlify/functions"
+publish = "public"
+command = "echo 'No build step needed for static site'"
+
+[functions]
+node_bundler = "esbuild"

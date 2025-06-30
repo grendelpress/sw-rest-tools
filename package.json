@@ -3,12 +3,14 @@
   "private": true,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "dev": "netlify dev",
+    "build": "echo 'No build step needed for static site'",
+    "deploy": "netlify deploy --prod"
   },
   "dependencies": {
     "@signalwire/compatibility-api": "^3.0.2",
-    "csv-parser": "^3.0.0",
-    "csv-writer": "^1.6.0",
-    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "netlify-cli": "^17.0.0"
   }
 }
