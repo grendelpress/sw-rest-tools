@@ -47,7 +47,8 @@ document.querySelectorAll('.api-link').forEach(link => {
             const csvResponse = await fetch(`/.netlify/functions${link.dataset.endpoint}`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Accept': 'text/csv, application/json'
                 },
                 body: JSON.stringify(credentials)
             });

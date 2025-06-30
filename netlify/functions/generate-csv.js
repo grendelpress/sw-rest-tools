@@ -1,6 +1,9 @@
 const { RestClient } = require('@signalwire/compatibility-api');
 
 exports.handler = async (event, context) => {
+  console.log('Function called with method:', event.httpMethod);
+  console.log('Event body:', event.body);
+  
   // Handle CORS preflight requests
   if (event.httpMethod === 'OPTIONS') {
     return {
@@ -15,10 +18,12 @@ exports.handler = async (event, context) => {
   }
 
   if (event.httpMethod !== 'POST') {
+    console.log('Method not allowed:', event.httpMethod);
     return {
       statusCode: 405,
       headers: {
-        'Access-Control-Allow-Origin': '*'
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({ error: 'Method not allowed' })
     };
