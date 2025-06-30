@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SignalWire API Tools</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>SignalWire API Tools</h1>
+        <form id="credentialsForm">
+            <div class="form-group">
+                <label for="projectId">Project ID:</label>
+                <input type="text" id="projectId" required>
+            </div>
+            <div class="form-group">
+                <label for="authToken">Auth Token:</label>
+                <input type="password" id="authToken" required>
+            </div>
+            <div class="form-group">
+                <label for="spaceUrl">Space URL:</label>
+                <input type="text" id="spaceUrl" required>
+                <small>yourspace.signalwire.com</small>
+            </div>
+            <div class="button-group">
+                <button type="submit">Save Credentials</button>
+                <button type="button" id="clearBtn" class="secondary">Clear Credentials</button>
+            </div>
+        </form>
+        <div id="apiLinks">
+            <h2>Available APIs</h2>
+            <div class="api-list">
+                <a href="#" class="api-link" data-endpoint="/generate-csv">
+                    <h3>Phone Numbers Export</h3>
+                    <p>Download a CSV of all your phone numbers</p>
+                </a>
+                <!-- More API links can be added here -->
+            </div>
+        </div>
+        <div id="status" class="hidden">
+            <div class="spinner"></div>
+            <p>Processing request...</p>
+        </div>
+        <div id="download" class="hidden"></div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
