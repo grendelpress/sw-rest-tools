@@ -45,11 +45,13 @@ exports.handler = async (event, context) => {
       dateSent: record.dateSent ? record.dateSent.toString() : '',
       status: record.status || '',
       direction: record.direction || '',
-      price: record.price || ''
+      price: record.price || '',
+      body: record.body || '',
+      numSegments: record.numSegments || ''
     }));
 
     // Create CSV content
-    const headers = ['Message SID', 'From', 'To', 'Date Sent', 'Status', 'Direction', 'Price'];
+    const headers = ['Message SID', 'From', 'To', 'Date Sent', 'Status', 'Direction', 'Price', 'Body', 'Number of Segments'];
     const csvContent = [
       headers.join(','),
       ...data.map(row => [
@@ -59,7 +61,9 @@ exports.handler = async (event, context) => {
         `"${row.dateSent}"`,
         `"${row.status}"`,
         `"${row.direction}"`,
-        `"${row.price}"`
+        `"${row.price}"`,
+        `"${row.body.replace(/"/g, '""')}"`, // Escape quotes in message body
+        `"${row.numSegments}"`
       ].join(','))
     ].join('\n');
 
