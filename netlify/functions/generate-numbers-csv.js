@@ -46,19 +46,17 @@ exports.handler = async (event, context) => {
     const data = incomingPhoneNumbers.map((record) => ({
       phoneNumber: record.phoneNumber,
       friendlyName: record.friendlyName,
-      phoneNumberSid: record.sid,
-      projectSid: record.accountSid
+      phoneNumberSid: record.sid
     }));
 
     // Create CSV content
-    const headers = ['Phone Number', 'Name', 'Phone Number SID', 'Project SID'];
+    const headers = ['Phone Number', 'Name', 'Phone Number SID'];
     const csvContent = [
       headers.join(','),
       ...data.map(row => [
         row.phoneNumber,
         row.friendlyName || '',
-        row.phoneNumberSid,
-        row.projectSid
+        row.phoneNumberSid
       ].join(','))
     ].join('\n');
 

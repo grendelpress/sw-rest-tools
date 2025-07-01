@@ -52,12 +52,11 @@ exports.handler = async (event, context) => {
       forwardedFrom: record.forwardedFrom || '',
       callerName: record.callerName || '',
       price: record.price || '',
-      priceUnit: record.priceUnit || '',
-      accountSid: record.accountSid || ''
+      priceUnit: record.priceUnit || ''
     }));
 
     // Create CSV content
-    const headers = ['Call SID', 'Parent Call SID', 'From', 'To', 'Start Time', 'End Time', 'Duration (seconds)', 'Status', 'Direction', 'Answered By', 'Forwarded From', 'Caller Name', 'Price', 'Price Unit', 'Account SID'];
+    const headers = ['Call SID', 'Parent Call SID', 'From', 'To', 'Start Time', 'End Time', 'Duration (seconds)', 'Status', 'Direction', 'Answered By', 'Forwarded From', 'Caller Name', 'Price', 'Price Unit'];
     const csvContent = [
       headers.join(','),
       ...data.map(row => [
@@ -74,8 +73,7 @@ exports.handler = async (event, context) => {
         `"${row.forwardedFrom}"`,
         `"${row.callerName}"`,
         `"${row.price}"`,
-        `"${row.priceUnit}"`,
-        `"${row.accountSid}"`
+        `"${row.priceUnit}"`
       ].join(','))
     ].join('\n');
 

@@ -50,12 +50,11 @@ exports.handler = async (event, context) => {
       priceUnit: record.priceUnit || '',
       numPages: record.numPages || '',
       duration: record.duration || '',
-      mediaUrl: record.mediaUrl || '',
-      accountSid: record.accountSid || ''
+      mediaUrl: record.mediaUrl || ''
     }));
 
     // Create CSV content
-    const headers = ['Fax SID', 'From', 'To', 'Date Created', 'Date Updated', 'Status', 'Direction', 'Price', 'Price Unit', 'Number of Pages', 'Duration', 'Media URL', 'Account SID'];
+    const headers = ['Fax SID', 'From', 'To', 'Date Created', 'Date Updated', 'Status', 'Direction', 'Price', 'Price Unit', 'Number of Pages', 'Duration', 'Media URL'];
     const csvContent = [
       headers.join(','),
       ...data.map(row => [
@@ -70,8 +69,7 @@ exports.handler = async (event, context) => {
         `"${row.priceUnit}"`,
         `"${row.numPages}"`,
         `"${row.duration}"`,
-        `"${row.mediaUrl}"`,
-        `"${row.accountSid}"`
+        `"${row.mediaUrl}"`
       ].join(','))
     ].join('\n');
 

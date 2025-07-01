@@ -52,12 +52,11 @@ exports.handler = async (event, context) => {
       price: record.price || '',
       priceUnit: record.priceUnit || '',
       uri: record.uri || '',
-      encryptionDetails: record.encryptionDetails ? JSON.stringify(record.encryptionDetails) : '',
-      accountSid: record.accountSid || ''
+      encryptionDetails: record.encryptionDetails ? JSON.stringify(record.encryptionDetails) : ''
     }));
 
     // Create CSV content
-    const headers = ['Recording SID', 'Call SID', 'Conference SID', 'Date Created', 'Date Updated', 'Duration (seconds)', 'Status', 'Source', 'Channels', 'Start Time', 'Price', 'Price Unit', 'URI', 'Encryption Details', 'Account SID'];
+    const headers = ['Recording SID', 'Call SID', 'Conference SID', 'Date Created', 'Date Updated', 'Duration (seconds)', 'Status', 'Source', 'Channels', 'Start Time', 'Price', 'Price Unit', 'URI', 'Encryption Details'];
     const csvContent = [
       headers.join(','),
       ...data.map(row => [
@@ -74,8 +73,7 @@ exports.handler = async (event, context) => {
         `"${row.price}"`,
         `"${row.priceUnit}"`,
         `"${row.uri}"`,
-        `"${row.encryptionDetails.replace(/"/g, '""')}"`, // Escape quotes in JSON
-        `"${row.accountSid}"`
+        `"${row.encryptionDetails.replace(/"/g, '""')}"` // Escape quotes in JSON
       ].join(','))
     ].join('\n');
 
