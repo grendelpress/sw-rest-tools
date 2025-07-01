@@ -58,6 +58,17 @@ document.querySelectorAll('.api-link').forEach(link => {
                 throw new Error(error.error || 'Failed to generate CSV');
             }
 
+            // Extract filename from Content-Disposition header
+            const contentDisposition = csvResponse.headers.get('Content-Disposition');
+            let filename = 'Numbers.csv'; // fallback filename
+            
+            if (contentDisposition) {
+                const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+                if (filenameMatch && filenameMatch[1]) {
+                    filename = filenameMatch[1].replace(/['"]/g, '');
+                }
+            }
+
             // Create blob from CSV response
             const blob = await csvResponse.blob();
             const url = window.URL.createObjectURL(blob);
@@ -65,7 +76,7 @@ document.querySelectorAll('.api-link').forEach(link => {
             // Create temporary link and trigger download
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'Numbers.csv';
+            a.download = filename;
             document.body.appendChild(a);
             a.click();
             window.URL.revokeObjectURL(url);
