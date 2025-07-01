@@ -142,10 +142,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 If you encounter any issues or have questions:
 
-1. Check the [SignalWire Documentation](https://docs.signalwire.com/)
-2. Review your API credentials and permissions
-3. Ensure your SignalWire space URL is correct
-4. Open an issue in this repository
+1. Review your API credentials and permissions
+2. Ensure your SignalWire space URL is correct
+3. Open an issue in this repository
 
 ## Acknowledgments
 
