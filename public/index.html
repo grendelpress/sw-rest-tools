@@ -57,6 +57,27 @@
             <div class="spinner"></div>
             <p>Processing request...</p>
         </div>
+        <div id="dataDisplay" class="hidden">
+            <div class="data-header">
+                <h2 id="dataTitle">Data Results</h2>
+                <div class="search-controls">
+                    <input type="text" id="searchInput" placeholder="Search data...">
+                    <button id="searchBtn">Search</button>
+                    <button id="downloadFilteredBtn" class="secondary">Download Filtered CSV</button>
+                    <button id="backBtn" class="tertiary">Back to Menu</button>
+                </div>
+                <div class="data-info">
+                    <span id="recordCount">0 records</span>
+                    <span id="filteredCount" class="hidden">0 filtered results</span>
+                </div>
+            </div>
+            <div id="dataTableContainer">
+                <table id="dataTable">
+                    <thead id="dataTableHead"></thead>
+                    <tbody id="dataTableBody"></tbody>
+                </table>
+            </div>
+        </div>
         <div id="download" class="hidden"></div>
     </div>
     <script src="script.js"></script>

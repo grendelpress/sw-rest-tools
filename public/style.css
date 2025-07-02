@@ -35,6 +35,14 @@ button.secondary:hover {
     background: #7f8c8d;
 }
 
+button.tertiary {
+    background: #bdc3c7;
+}
+
+button.tertiary:hover {
+    background: #95a5a6;
+}
+
 label {
     display: block;
     margin-bottom: 5px;
@@ -133,4 +141,125 @@ button:hover {
     margin: 0;
     color: #666;
     font-size: 14px;
+}
+
+/* Data display styles */
+#dataDisplay {
+    margin-top: 20px;
+}
+
+.data-header {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.data-header h2 {
+    margin: 0 0 15px 0;
+    color: #2c3e50;
+}
+
+.search-controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.search-controls input {
+    flex: 1;
+    min-width: 200px;
+}
+
+.search-controls button {
+    width: auto;
+    padding: 8px 16px;
+    white-space: nowrap;
+}
+
+.data-info {
+    display: flex;
+    gap: 20px;
+    font-size: 14px;
+    color: #666;
+}
+
+.data-info span {
+    padding: 4px 8px;
+    background: white;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+}
+
+#dataTableContainer {
+    max-height: 600px;
+    overflow: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+}
+
+#dataTable {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+#dataTable th {
+    background: #f8f9fa;
+    padding: 12px 8px;
+    text-align: left;
+    border-bottom: 2px solid #dee2e6;
+    position: sticky;
+    top: 0;
+    font-weight: 600;
+    color: #495057;
+}
+
+#dataTable td {
+    padding: 8px;
+    border-bottom: 1px solid #dee2e6;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+#dataTable tr:hover {
+    background: #f8f9fa;
+}
+
+#dataTable tr:nth-child(even) {
+    background: #fdfdfd;
+}
+
+#dataTable tr:nth-child(even):hover {
+    background: #f8f9fa;
+}
+
+/* Responsive design for data table */
+@media (max-width: 768px) {
+    .search-controls {
+        flex-direction: column;
+    }
+    
+    .search-controls input,
+    .search-controls button {
+        width: 100%;
+    }
+    
+    .data-info {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    #dataTable th,
+    #dataTable td {
+        padding: 6px 4px;
+        font-size: 12px;
+    }
+    
+    #dataTable td {
+        max-width: 100px;
+    }
 }
