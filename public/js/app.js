@@ -158,7 +158,7 @@ class SignalWireApp {
     
     handleDownloadFiltered() {
         const filteredData = this.dataFilter.getFilteredData();
-        const filename = `Filtered_${this.currentDataType}.csv`;
+        const filename = `Filtered-${this.currentDataType}.csv`;
         CSVUtils.downloadCSV(filteredData, filename);
     }
     
