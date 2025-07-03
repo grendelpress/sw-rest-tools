@@ -47,6 +47,7 @@ class SignalWireApp {
         
         // Action buttons
         this.downloadFilteredBtn = document.getElementById('downloadFilteredBtn');
+        this.downloadOriginalBtn = document.getElementById('downloadOriginalBtn');
         this.backBtn = document.getElementById('backBtn');
         this.toggleAnalyticsBtn = document.getElementById('toggleAnalyticsBtn');
         
@@ -88,6 +89,7 @@ class SignalWireApp {
         
         // Action button events
         this.downloadFilteredBtn.addEventListener('click', () => this.handleDownloadFiltered());
+        this.downloadOriginalBtn.addEventListener('click', () => this.handleDownloadOriginal());
         this.backBtn.addEventListener('click', () => this.handleBack());
         this.toggleAnalyticsBtn.addEventListener('click', () => this.handleToggleAnalytics());
         
@@ -163,6 +165,14 @@ class SignalWireApp {
             `${this.currentDataType}-${this.currentProjectName}.csv` : 
             `${this.currentDataType}.csv`;
         CSVUtils.downloadCSV(filteredData, filename);
+    }
+    
+    handleDownloadOriginal() {
+        const originalData = this.dataFilter.getOriginalData();
+        const filename = this.currentProjectName ? 
+            `${this.currentDataType}-${this.currentProjectName}.csv` : 
+            `${this.currentDataType}.csv`;
+        CSVUtils.downloadCSV(originalData, filename);
     }
     
     handleBack() {

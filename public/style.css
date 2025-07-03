@@ -129,6 +129,14 @@ button.secondary:hover {
     background: #7f8c8d;
 }
 
+button.primary {
+    background: #3498db;
+}
+
+button.primary:hover {
+    background: #2980b9;
+}
+
 button.tertiary {
     background: #bdc3c7;
 }
