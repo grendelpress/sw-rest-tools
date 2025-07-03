@@ -17,6 +17,7 @@ class SignalWireApp {
         this.analytics = new Analytics();
         this.analyticsRenderer = new AnalyticsRenderer(document.getElementById('analyticsContainer'));
         this.currentDataType = '';
+        this.currentProjectName = '';
         
         this.initializeElements();
         this.initializeDataTable();
@@ -158,7 +159,9 @@ class SignalWireApp {
     
     handleDownloadFiltered() {
         const filteredData = this.dataFilter.getFilteredData();
-        const filename = `Filtered-${this.currentDataType}.csv`;
+        const filename = this.currentProjectName ? 
+            `${this.currentDataType}-${this.currentProjectName}.csv` : 
+            `${this.currentDataType}.csv`;
         CSVUtils.downloadCSV(filteredData, filename);
     }
     
@@ -168,6 +171,7 @@ class SignalWireApp {
         this.handleClearFilters();
         this.dataFilter.setOriginalData([]);
         this.currentDataType = '';
+        this.currentProjectName = '';
         this.analyticsRenderer.hide();
         this.resetAnalyticsToggle();
     }
@@ -225,6 +229,11 @@ class SignalWireApp {
         try {
             const response = await APIClient.makeRequest(endpoint, this.credentials, dateParams);
             const csvText = await response.text();
+            
+            // Extract project name from the filename in the response headers
+            const filename = APIClient.extractFilename(response);
+            const projectNameMatch = filename.match(/^[^-]+-(.+)\.csv$/);
+            this.currentProjectName = projectNameMatch ? projectNameMatch[1] : '';
             
             // Parse and display data
             const originalData = CSVUtils.parseCSV(csvText);
