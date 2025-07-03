@@ -61,7 +61,7 @@ exports.handler = async (event, context) => {
     ].join('\n');
 
     // Create filename with project name and API type
-    const filename = `PhoneNumbers_${cleanProjectName}.csv`;
+    const filename = `Numbers-${cleanProjectName}.csv`;
 
     return {
       statusCode: 200,
