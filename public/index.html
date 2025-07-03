@@ -28,28 +28,50 @@
                 <button type="button" id="clearBtn" class="secondary">Clear Credentials</button>
             </div>
         </form>
+        
+        <div id="dateRangeSection" class="date-range-section hidden">
+            <h2>Date Range Filter (Optional)</h2>
+            <div class="date-range-controls">
+                <div class="date-group">
+                    <label for="startDate">Start Date:</label>
+                    <input type="date" id="startDate">
+                </div>
+                <div class="date-group">
+                    <label for="endDate">End Date:</label>
+                    <input type="date" id="endDate">
+                </div>
+                <div class="date-presets">
+                    <button type="button" class="preset-btn" data-days="1">Yesterday</button>
+                    <button type="button" class="preset-btn" data-days="7">Last 7 Days</button>
+                    <button type="button" class="preset-btn" data-days="30">Last 30 Days</button>
+                    <button type="button" class="preset-btn" data-days="90">Last 90 Days</button>
+                    <button type="button" id="clearDatesBtn" class="preset-btn clear">Clear Dates</button>
+                </div>
+            </div>
+        </div>
+        
         <div id="apiLinks">
             <h2>Available APIs</h2>
             <div class="api-list">
                 <a href="#" class="api-link" data-endpoint="/generate-numbers-csv">
-                    <h3>Phone Numbers Export</h3>
-                    <p>Download a CSV of all your phone numbers</p>
+                    <h3>Phone Numbers</h3>
+                    <p>View and download a CSV of all your phone numbers</p>
                 </a>
                 <a href="#" class="api-link" data-endpoint="/generate-messages-csv">
-                    <h3>Messages Export</h3>
-                    <p>Download a CSV of all your messages</p>
+                    <h3>Messages</h3>
+                    <p>View and download a CSV of all your messages</p>
                 </a>
                 <a href="#" class="api-link" data-endpoint="/generate-faxes-csv">
-                    <h3>Faxes Export</h3>
-                    <p>Download a CSV of all your faxes</p>
+                    <h3>Faxes</h3>
+                    <p>View and download a CSV of all your faxes</p>
                 </a>
                 <a href="#" class="api-link" data-endpoint="/generate-calls-csv">
-                    <h3>Calls Export</h3>
-                    <p>Download a CSV of all your calls</p>
+                    <h3>Calls</h3>
+                    <p>View and download a CSV of all your calls</p>
                 </a>
                 <a href="#" class="api-link" data-endpoint="/generate-recordings-csv">
-                    <h3>Recordings Export</h3>
-                    <p>Download a CSV of all your recordings</p>
+                    <h3>Recordings</h3>
+                    <p>View and download a CSV of all your recordings</p>
                 </a>
             </div>
         </div>
@@ -59,12 +81,53 @@
         </div>
         <div id="dataDisplay" class="hidden">
             <div class="data-header">
-                <h2 id="dataTitle">Data Results</h2>
-                <div class="search-controls">
-                    <input type="text" id="searchInput" placeholder="Search data...">
-                    <button id="searchBtn">Search</button>
-                    <button id="downloadFilteredBtn" class="secondary">Download Filtered CSV</button>
-                    <button id="backBtn" class="tertiary">Back to Menu</button>
+                <div class="header-top">
+                    <h2 id="dataTitle">Data Results</h2>
+                    <button id="backBtn" class="back-button">← Back to Menu</button>
+                </div>
+                
+                <!-- Analytics Section -->
+                <div id="analyticsSection" class="analytics-section">
+                    <div class="analytics-toggle">
+                        <button id="toggleAnalyticsBtn" class="analytics-toggle-btn">
+                            📊 Show Analytics
+                        </button>
+                    </div>
+                    <div id="analyticsContainer" class="analytics-container hidden"></div>
+                </div>
+                
+                <div class="combined-controls">
+                    <div class="filter-section">
+                        <h3>Filter & Search</h3>
+                        <div class="filter-row">
+                            <div class="date-inputs">
+                                <div class="date-group">
+                                    <label for="filterStartDate">Start Date:</label>
+                                    <input type="date" id="filterStartDate">
+                                </div>
+                                <div class="date-group">
+                                    <label for="filterEndDate">End Date:</label>
+                                    <input type="date" id="filterEndDate">
+                                </div>
+                            </div>
+                            <div class="search-section">
+                                <label for="searchInput">Search:</label>
+                                <input type="text" id="searchInput" placeholder="Search all fields...">
+                            </div>
+                        </div>
+                        <div class="filter-actions">
+                            <div class="date-presets">
+                                <button type="button" class="preset-btn" data-days="1">Yesterday</button>
+                                <button type="button" class="preset-btn" data-days="7">Last 7 Days</button>
+                                <button type="button" class="preset-btn" data-days="30">Last 30 Days</button>
+                                <button type="button" class="preset-btn" data-days="90">Last 90 Days</button>
+                                <button type="button" id="clearFiltersBtn" class="preset-btn clear">Clear All</button>
+                            </div>
+                            <div class="action-buttons">
+                                <button id="downloadFilteredBtn" class="secondary">Download Filtered CSV</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="data-info">
                     <span id="recordCount">0 records</span>
@@ -80,6 +143,6 @@
         </div>
         <div id="download" class="hidden"></div>
     </div>
-    <script src="script.js"></script>
+    <script type="module" src="js/app.js"></script>
 </body>
 </html>

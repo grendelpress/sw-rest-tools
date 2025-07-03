@@ -25,7 +25,7 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    const { projectId, authToken, spaceUrl } = JSON.parse(event.body);
+    const { projectId, authToken, spaceUrl, startDate, endDate } = JSON.parse(event.body);
     
     const client = new RestClient(projectId, authToken, { signalwireSpaceUrl: spaceUrl });
     
@@ -36,7 +36,16 @@ exports.handler = async (event, context) => {
     // Clean project name for filename (remove invalid characters)
     const cleanProjectName = projectName.replace(/[^a-zA-Z0-9_-]/g, '_');
     
-    const recordings = await client.recordings.list();
+    // Build query options for date filtering
+    const queryOptions = {};
+    if (startDate) {
+      queryOptions.dateCreatedAfter = new Date(startDate + 'T00:00:00Z');
+    }
+    if (endDate) {
+      queryOptions.dateCreatedBefore = new Date(endDate + 'T23:59:59Z');
+    }
+    
+    const recordings = await client.recordings.list(queryOptions);
     
     const data = recordings.map((record) => ({
       recordingSid: record.sid || '',
