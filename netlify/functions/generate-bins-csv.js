@@ -1,5 +1,4 @@
-const { RestClient } = require('@signalwire/compatibility-api');
-const fetch = require('node-fetch');
+const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
 exports.handler = async (event, context) => {
   // Handle CORS preflight requests
@@ -28,18 +27,29 @@ exports.handler = async (event, context) => {
   try {
     const { projectId, authToken, spaceUrl, startDate, endDate } = JSON.parse(event.body);
     
-    const client = new RestClient(projectId, authToken, { signalwireSpaceUrl: spaceUrl });
+    // Create basic auth header
+    const auth = Buffer.from(`${projectId}:${authToken}`).toString('base64');
     
     // Fetch project details to get the friendly name
-    const project = await client.api.accounts(projectId).fetch();
-    const projectName = project.friendlyName || 'UnnamedProject';
+    const projectResponse = await fetch(`https://${spaceUrl}/api/laml/2010-04-01/Accounts/${projectId}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Basic ${auth}`,
+        'Accept': 'application/json'
+      }
+    });
+    
+    if (!projectResponse.ok) {
+      throw new Error(`Failed to fetch project details: ${projectResponse.status}`);
+    }
+    
+    const project = await projectResponse.json();
+    const projectName = project.friendly_name || project.friendlyName || 'UnnamedProject';
     
     // Clean project name for filename (remove invalid characters)
     const cleanProjectName = projectName.replace(/[^a-zA-Z0-9_-]/g, '_');
     
-    // Use direct API calls for LaML bins since SDK method doesn't return all results
-    const auth = Buffer.from(`${projectId}:${authToken}`).toString('base64');
-    
+    // Fetch all bins with pagination
     async function fetchAllBins() {
       const allBins = [];
       let nextPageUri = null;
@@ -72,7 +82,7 @@ exports.handler = async (event, context) => {
           url = queryParams.toString() ? `${baseUrl}?${queryParams}` : baseUrl;
         }
         
-        console.log(`Fetching page ${pageCount}: ${url}`);
+        console.log(`Fetching bins page ${pageCount}: ${url}`);
         
         const response = await fetch(url, {
           method: 'GET',
@@ -104,21 +114,82 @@ exports.handler = async (event, context) => {
       return allBins;
     }
     
-    // Directly call fetchAllBins() instead of trying SDK first
+    // Fetch detailed information for each bin
+    async function fetchBinDetails(binUri) {
+      try {
+        const response = await fetch(`https://${spaceUrl}${binUri}`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Basic ${auth}`,
+            'Accept': 'application/json'
+          }
+        });
+        
+        if (!response.ok) {
+          console.warn(`Failed to fetch details for bin ${binUri}: ${response.status}`);
+          return null;
+        }
+        
+        return await response.json();
+      } catch (error) {
+        console.warn(`Error fetching bin details for ${binUri}:`, error.message);
+        return null;
+      }
+    }
+    
+    // Get all bins
     const bins = await fetchAllBins();
     
-    const data = bins.map((record) => ({
-      binSid: record.sid || '',
-      name: record.friendlyName || record.name || '',
-      dateCreated: record.dateCreated ? record.dateCreated.toString() : (record.date_created || ''),
-      dateUpdated: record.dateUpdated ? record.dateUpdated.toString() : (record.date_updated || ''),
-      dateLastAccessed: record.dateLastAccessed ? record.dateLastAccessed.toString() : (record.date_last_accessed || ''),
-      accountSid: record.accountSid || record.account_sid || '',
-      contents: record.contents || '',
-      requestUrl: record.requestUrl || record.request_url || '',
-      apiVersion: record.apiVersion || record.api_version || '',
-      uri: record.uri || ''
-    }));
+    // Fetch detailed information for each bin (with rate limiting)
+    const detailedBins = [];
+    const batchSize = 5; // Process 5 bins at a time to avoid rate limits
+    
+    for (let i = 0; i < bins.length; i += batchSize) {
+      const batch = bins.slice(i, i + batchSize);
+      const batchPromises = batch.map(bin => fetchBinDetails(bin.uri));
+      const batchResults = await Promise.all(batchPromises);
+      
+      batchResults.forEach((details, index) => {
+        const originalBin = batch[index];
+        if (details) {
+          detailedBins.push({
+            ...originalBin,
+            ...details
+          });
+        } else {
+          // Use basic info if detailed fetch failed
+          detailedBins.push(originalBin);
+        }
+      });
+      
+      // Small delay between batches to be respectful to the API
+      if (i + batchSize < bins.length) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+    }
+    
+    // Map the data to CSV format
+    const data = detailedBins.map((record) => {
+      // Extract SID from URI if not directly available
+      let binSid = record.sid;
+      if (!binSid && record.uri) {
+        const sidMatch = record.uri.match(/LamlBins\/([^\/]+)$/);
+        binSid = sidMatch ? sidMatch[1] : '';
+      }
+      
+      return {
+        binSid: binSid || '',
+        name: record.friendly_name || record.friendlyName || record.name || '',
+        dateCreated: record.date_created || record.dateCreated || '',
+        dateUpdated: record.date_updated || record.dateUpdated || '',
+        dateLastAccessed: record.date_last_accessed || record.dateLastAccessed || '',
+        accountSid: record.account_sid || record.accountSid || projectId,
+        contents: record.contents || '',
+        requestUrl: record.request_url || record.requestUrl || '',
+        apiVersion: record.api_version || record.apiVersion || '',
+        uri: record.uri || ''
+      };
+    });
 
     // Create CSV content
     const headers = ['Bin SID', 'Name', 'Date Created', 'Date Updated', 'Date Last Accessed', 'Account SID', 'Contents', 'Request URL', 'API Version', 'URI'];

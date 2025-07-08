@@ -37,6 +37,32 @@ exports.handler = async (event, context) => {
     console.log('Response data keys:', Object.keys(data));
     console.log('Number of bins:', data.laml_bins ? data.laml_bins.length : 'No laml_bins property');
     
+    // Test fetching details for the first bin if available
+    let firstBinDetails = null;
+    if (data.laml_bins && data.laml_bins.length > 0) {
+      const firstBinUri = data.laml_bins[0].uri;
+      console.log('Fetching details for first bin:', firstBinUri);
+      
+      try {
+        const detailResponse = await fetch(`https://sassyspace.signalwire.com${firstBinUri}`, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': 'Basic OWFmOGE3MTYtY2NiYS00YTM4LTlhODAtYzc0ZjNjYzMxZGY3OlBUNTMyZjMwMWE2ZDAwN2EyZmRjMDlkNDhiNGYxODRlYjBiNjJlNjk2NzBjMjdlOTkx'
+          }
+        });
+        
+        if (detailResponse.ok) {
+          firstBinDetails = await detailResponse.json();
+          console.log('First bin details keys:', Object.keys(firstBinDetails));
+        } else {
+          console.log('Failed to fetch bin details:', detailResponse.status);
+        }
+      } catch (error) {
+        console.log('Error fetching bin details:', error.message);
+      }
+    }
+    
     // Return the raw response for inspection
     return {
       statusCode: 200,
@@ -49,12 +75,14 @@ exports.handler = async (event, context) => {
         responseStatus: response.status,
         responseHeaders: Object.fromEntries(response.headers.entries()),
         data: data,
+        firstBinDetails: firstBinDetails,
         summary: {
           totalBins: data.laml_bins ? data.laml_bins.length : 0,
           hasNextPage: !!data.next_page_uri,
           nextPageUri: data.next_page_uri,
           page: data.page,
-          pageSize: data.page_size
+          pageSize: data.page_size,
+          firstBinUri: data.laml_bins && data.laml_bins.length > 0 ? data.laml_bins[0].uri : null
         }
       }, null, 2)
     };
