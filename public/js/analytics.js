@@ -20,6 +20,8 @@ export class Analytics {
                 return this.generateCallsSummary();
             case 'Faxes':
                 return this.generateFaxesSummary();
+            case 'cXML Bins':
+                return this.generateBinsSummary();
             default:
                 return this.generateGenericSummary();
         }
@@ -120,6 +122,43 @@ export class Analytics {
                 { title: 'Top Recipients', data: topReceivers }
             ]
         };
+    }
+    
+    generateBinsSummary() {
+        const total = this.data.length;
+        const dateRange = this.getDateRange(['Date Created', 'Date Updated', 'Date Last Accessed']);
+        const totalWithContents = this.data.filter(row => row['Contents'] && row['Contents'].trim()).length;
+        const avgContentLength = this.calculateAverageContentLength();
+        const lastAccessedCount = this.data.filter(row => row['Date Last Accessed'] && row['Date Last Accessed'].trim()).length;
+        
+        // Top bins by name
+        const topBins = this.getTopValues('Name', 10);
+        
+        return {
+            title: 'cXML Bins Analytics',
+            metrics: [
+                { label: 'Total Bins', value: total.toLocaleString(), type: 'primary' },
+                { label: 'Date Range', value: dateRange, type: 'info' },
+                { label: 'With Contents', value: totalWithContents.toLocaleString(), type: 'secondary' },
+                { label: 'Avg Content Length', value: `${avgContentLength} chars`, type: 'secondary' },
+                { label: 'Recently Accessed', value: lastAccessedCount.toLocaleString(), type: 'info' }
+            ],
+            breakdowns: [],
+            topLists: [
+                { title: 'Bin Names', data: topBins }
+            ]
+        };
+    }
+    
+    calculateAverageContentLength() {
+        const contentLengths = this.data
+            .map(row => (row['Contents'] || '').length)
+            .filter(length => length > 0);
+        
+        if (contentLengths.length === 0) return 0;
+        
+        const average = contentLengths.reduce((sum, length) => sum + length, 0) / contentLengths.length;
+        return Math.round(average);
     }
     
     generateGenericSummary() {
