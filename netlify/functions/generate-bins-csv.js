@@ -27,7 +27,15 @@ exports.handler = async (event, context) => {
   try {
     const { projectId, authToken, spaceUrl, startDate, endDate } = JSON.parse(event.body);
     
-    // Create basic auth header
+    if (!projectId || !authToken || !spaceUrl) {
+      throw new Error('Missing required credentials: projectId, authToken, and spaceUrl are required');
+    }
+    
+    console.log('Using provided credentials for API call...');
+    console.log('Project ID:', projectId);
+    console.log('Space URL:', spaceUrl);
+    
+    // Create basic auth header from provided credentials
     const auth = Buffer.from(`${projectId}:${authToken}`).toString('base64');
     
     // Fetch project details to get the friendly name
@@ -61,7 +69,6 @@ exports.handler = async (event, context) => {
         let url;
         
         if (nextPageUri) {
-          // Use the next page URI provided by the API
           url = `https://${spaceUrl}${nextPageUri}`;
         } else {
           // Build initial URL
@@ -87,17 +94,19 @@ exports.handler = async (event, context) => {
         const response = await fetch(url, {
           method: 'GET',
           headers: {
-            'Authorization': `Basic ${auth}`,
-            'Accept': 'application/json'
+            'Accept': 'application/json',
+            'Authorization': `Basic ${auth}`
           }
         });
-        
+
+        console.log(`Page ${pageCount} response status:`, response.status);
+
         if (!response.ok) {
           throw new Error(`API request failed: ${response.status} ${response.statusText}`);
         }
-        
-        const result = await response.json();
-        const pageBins = result.laml_bins || [];
+
+        const data = await response.json();
+        const pageBins = data.laml_bins || [];
         
         console.log(`Page ${pageCount}: Found ${pageBins.length} bins`);
         
@@ -105,8 +114,7 @@ exports.handler = async (event, context) => {
           allBins.push(...pageBins);
         }
         
-        // Check for next page URI in the response
-        nextPageUri = result.next_page_uri || null;
+        nextPageUri = data.next_page_uri || null;
         
       } while (nextPageUri && pageCount < maxPages);
       
@@ -120,8 +128,8 @@ exports.handler = async (event, context) => {
         const response = await fetch(`https://${spaceUrl}${binUri}`, {
           method: 'GET',
           headers: {
-            'Authorization': `Basic ${auth}`,
-            'Accept': 'application/json'
+            'Accept': 'application/json',
+            'Authorization': `Basic ${auth}`
           }
         });
         
@@ -140,9 +148,27 @@ exports.handler = async (event, context) => {
     // Get all bins
     const bins = await fetchAllBins();
     
+    if (bins.length === 0) {
+      // Return empty CSV with headers
+      const headers = ['Bin SID', 'Name', 'Date Created', 'Date Updated', 'Date Last Accessed', 'Account SID', 'Contents', 'Request URL', 'Num Requests', 'API Version', 'URI'];
+      const csvContent = headers.join(',');
+      
+      return {
+        statusCode: 200,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Content-Type': 'text/csv',
+          'Content-Disposition': `attachment; filename=Bins-${cleanProjectName}.csv`
+        },
+        body: csvContent
+      };
+    }
+    
     // Fetch detailed information for each bin (with rate limiting)
     const detailedBins = [];
     const batchSize = 5; // Process 5 bins at a time to avoid rate limits
+    
+    console.log(`Fetching detailed information for ${bins.length} bins...`);
     
     for (let i = 0; i < bins.length; i += batchSize) {
       const batch = bins.slice(i, i + batchSize);
@@ -152,10 +178,7 @@ exports.handler = async (event, context) => {
       batchResults.forEach((details, index) => {
         const originalBin = batch[index];
         if (details) {
-          detailedBins.push({
-            ...originalBin,
-            ...details
-          });
+          detailedBins.push(details);
         } else {
           // Use basic info if detailed fetch failed
           detailedBins.push(originalBin);
@@ -168,31 +191,25 @@ exports.handler = async (event, context) => {
       }
     }
     
+    console.log(`Successfully fetched details for ${detailedBins.length} bins`);
+    
     // Map the data to CSV format
-    const data = detailedBins.map((record) => {
-      // Extract SID from URI if not directly available
-      let binSid = record.sid;
-      if (!binSid && record.uri) {
-        const sidMatch = record.uri.match(/LamlBins\/([^\/]+)$/);
-        binSid = sidMatch ? sidMatch[1] : '';
-      }
-      
-      return {
-        binSid: binSid || '',
-        name: record.friendly_name || record.friendlyName || record.name || '',
-        dateCreated: record.date_created || record.dateCreated || '',
-        dateUpdated: record.date_updated || record.dateUpdated || '',
-        dateLastAccessed: record.date_last_accessed || record.dateLastAccessed || '',
-        accountSid: record.account_sid || record.accountSid || projectId,
-        contents: record.contents || '',
-        requestUrl: record.request_url || record.requestUrl || '',
-        apiVersion: record.api_version || record.apiVersion || '',
-        uri: record.uri || ''
-      };
-    });
+    const data = detailedBins.map((record) => ({
+      binSid: record.sid || '',
+      name: record.friendly_name || record.name || '',
+      dateCreated: record.date_created || '',
+      dateUpdated: record.date_updated || '',
+      dateLastAccessed: record.date_last_accessed || '',
+      accountSid: record.account_sid || projectId,
+      contents: record.contents || '',
+      requestUrl: record.request_url || '',
+      numRequests: record.num_requests || '',
+      apiVersion: record.api_version || '',
+      uri: record.uri || ''
+    }));
 
     // Create CSV content
-    const headers = ['Bin SID', 'Name', 'Date Created', 'Date Updated', 'Date Last Accessed', 'Account SID', 'Contents', 'Request URL', 'API Version', 'URI'];
+    const headers = ['Bin SID', 'Name', 'Date Created', 'Date Updated', 'Date Last Accessed', 'Account SID', 'Contents', 'Request URL', 'Num Requests', 'API Version', 'URI'];
     const csvContent = [
       headers.join(','),
       ...data.map(row => [
@@ -204,6 +221,7 @@ exports.handler = async (event, context) => {
         `"${row.accountSid}"`,
         `"${row.contents.replace(/"/g, '""')}"`, // Escape quotes in XML content
         `"${row.requestUrl}"`,
+        `"${row.numRequests}"`,
         `"${row.apiVersion}"`,
         `"${row.uri}"`
       ].join(','))

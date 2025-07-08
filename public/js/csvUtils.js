@@ -72,12 +72,19 @@ export class CSVUtils {
         
         const headers = Object.keys(data[0]);
         const csvContent = this.arrayToCSV(data, headers);
+        
+        // Ensure filename has .csv extension
+        if (!filename.toLowerCase().endsWith('.csv')) {
+            filename += '.csv';
+        }
+        
         const blob = new Blob([csvContent], { type: 'text/csv' });
         const url = window.URL.createObjectURL(blob);
         
         const a = document.createElement('a');
         a.href = url;
         a.download = filename;
+        a.style.display = 'none';
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);

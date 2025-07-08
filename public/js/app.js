@@ -161,18 +161,29 @@ class SignalWireApp {
     
     handleDownloadFiltered() {
         const filteredData = this.dataFilter.getFilteredData();
-        const filename = this.currentProjectName ? 
-            `${this.currentDataType}-${this.currentProjectName}.csv` : 
-            `${this.currentDataType}.csv`;
+        const filename = this.generateDownloadFilename('Filtered');
         CSVUtils.downloadCSV(filteredData, filename);
     }
     
     handleDownloadOriginal() {
         const originalData = this.dataFilter.getOriginalData();
-        const filename = this.currentProjectName ? 
-            `${this.currentDataType}-${this.currentProjectName}.csv` : 
-            `${this.currentDataType}.csv`;
+        const filename = this.generateDownloadFilename('All');
         CSVUtils.downloadCSV(originalData, filename);
+    }
+    
+    generateDownloadFilename(prefix = '') {
+        const cleanDataType = this.currentDataType.replace(/[^a-zA-Z0-9_-]/g, '_');
+        const cleanProjectName = this.currentProjectName.replace(/[^a-zA-Z0-9_-]/g, '_');
+        
+        if (this.currentProjectName) {
+            return prefix ? 
+                `${prefix}_${cleanDataType}-${cleanProjectName}.csv` : 
+                `${cleanDataType}-${cleanProjectName}.csv`;
+        } else {
+            return prefix ? 
+                `${prefix}_${cleanDataType}.csv` : 
+                `${cleanDataType}.csv`;
+        }
     }
     
     handleBack() {
@@ -257,16 +268,9 @@ class SignalWireApp {
             
             if (jsonResponse.success && jsonResponse.tableData) {
                 // Convert table data to CSV-like format for display
-                const tableHeaders = [
-                    'Index', 'SID', 'Name', 'Date Created', 'Date Updated', 
-                    'Date Last Accessed', 'Account SID', 'Request URL', 
-                    'Num Requests', 'API Version', 'Contents Preview', 
-                    'Contents Length', 'URI'
-                ];
-                
                 const csvLikeData = jsonResponse.tableData.map(row => ({
                     'Index': row.index,
-                    'SID': row.sid,
+                    'Bin SID': row.sid,
                     'Name': row.name,
                     'Date Created': row.dateCreated,
                     'Date Updated': row.dateUpdated,
@@ -275,7 +279,7 @@ class SignalWireApp {
                     'Request URL': row.requestUrl,
                     'Num Requests': row.numRequests,
                     'API Version': row.apiVersion,
-                    'Contents Preview': row.contentsPreview,
+                    'Contents': row.contentsPreview,
                     'Contents Length': row.contentsLength,
                     'URI': row.uri
                 }));
@@ -283,6 +287,9 @@ class SignalWireApp {
                 this.dataFilter.setOriginalData(csvLikeData);
                 this.uiManager.showDataDisplay(this.currentDataType);
                 this.dataTable.render(csvLikeData, csvLikeData.length);
+                
+                // Set a default project name for test endpoint
+                this.currentProjectName = 'TestData';
                 
                 // Show summary information
                 const summary = jsonResponse.summary;
