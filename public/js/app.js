@@ -18,6 +18,7 @@ class SignalWireApp {
         this.analyticsRenderer = new AnalyticsRenderer(document.getElementById('analyticsContainer'));
         this.currentDataType = '';
         this.currentProjectName = '';
+        this.csvDataForDownload = null; // Store CSV data for special endpoints
         
         this.initializeElements();
         this.initializeDataTable();
@@ -160,15 +161,17 @@ class SignalWireApp {
     }
     
     handleDownloadFiltered() {
-        const filteredData = this.dataFilter.getFilteredData();
+        // Use CSV data if available (for test endpoints), otherwise use filtered data
+        const dataToDownload = this.csvDataForDownload || this.dataFilter.getFilteredData();
         const filename = this.generateDownloadFilename('Filtered');
-        CSVUtils.downloadCSV(filteredData, filename);
+        CSVUtils.downloadCSV(dataToDownload, filename);
     }
     
     handleDownloadOriginal() {
-        const originalData = this.dataFilter.getOriginalData();
+        // Use CSV data if available (for test endpoints), otherwise use original data
+        const dataToDownload = this.csvDataForDownload || this.dataFilter.getOriginalData();
         const filename = this.generateDownloadFilename('All');
-        CSVUtils.downloadCSV(originalData, filename);
+        CSVUtils.downloadCSV(dataToDownload, filename);
     }
     
     generateDownloadFilename(prefix = '') {
@@ -191,6 +194,7 @@ class SignalWireApp {
         this.searchInput.value = '';
         this.handleClearFilters();
         this.dataFilter.setOriginalData([]);
+        this.csvDataForDownload = null; // Clear CSV data
         this.currentDataType = '';
         this.currentProjectName = '';
         this.analyticsRenderer.hide();
@@ -283,6 +287,9 @@ class SignalWireApp {
                     'Contents Length': row.contentsLength,
                     'URI': row.uri
                 }));
+                
+                // Store the CSV data for downloads
+                this.csvDataForDownload = jsonResponse.csvData || csvLikeData;
                 
                 this.dataFilter.setOriginalData(csvLikeData);
                 this.uiManager.showDataDisplay(this.currentDataType);

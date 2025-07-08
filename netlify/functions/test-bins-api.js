@@ -181,6 +181,42 @@ exports.handler = async (event, context) => {
       uri: bin.uri || 'N/A'
     }));
     
+    // Generate CSV data for download
+    const csvData = detailedBins.map((bin) => ({
+      'Bin SID': bin.sid || '',
+      'Name': bin.friendly_name || bin.name || '',
+      'Date Created': bin.date_created || '',
+      'Date Updated': bin.date_updated || '',
+      'Date Last Accessed': bin.date_last_accessed || '',
+      'Account SID': bin.account_sid || '',
+      'Request URL': bin.request_url || '',
+      'Num Requests': bin.num_requests || '',
+      'API Version': bin.api_version || '',
+      'Contents': bin.contents || '',
+      'Contents Length': bin.contents ? bin.contents.length : '',
+      'URI': bin.uri || ''
+    }));
+    
+    // Create CSV content
+    const headers = ['Bin SID', 'Name', 'Date Created', 'Date Updated', 'Date Last Accessed', 'Account SID', 'Request URL', 'Num Requests', 'API Version', 'Contents', 'Contents Length', 'URI'];
+    const csvContent = [
+      headers.join(','),
+      ...csvData.map(row => [
+        `"${row['Bin SID']}"`,
+        `"${row['Name']}"`,
+        `"${row['Date Created']}"`,
+        `"${row['Date Updated']}"`,
+        `"${row['Date Last Accessed']}"`,
+        `"${row['Account SID']}"`,
+        `"${row['Request URL']}"`,
+        `"${row['Num Requests']}"`,
+        `"${row['API Version']}"`,
+        `"${row['Contents'].replace(/"/g, '""')}"`, // Escape quotes in contents
+        `"${row['Contents Length']}"`,
+        `"${row['URI']}"`
+      ].join(','))
+    ].join('\n');
+    
     return {
       statusCode: 200,
       headers: {
@@ -191,6 +227,8 @@ exports.handler = async (event, context) => {
         success: true,
         message: `Successfully fetched ${detailedBins.length} bins with detailed information`,
         tableData: tableData,
+        csvData: csvData,
+        csvContent: csvContent,
         rawData: detailedBins,
         summary: {
           totalBins: bins.length,
