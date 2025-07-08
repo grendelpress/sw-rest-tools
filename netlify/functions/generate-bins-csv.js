@@ -38,6 +38,28 @@ exports.handler = async (event, context) => {
     // Create basic auth header from provided credentials
     const auth = Buffer.from(`${projectId}:${authToken}`).toString('base64');
     
+    // Fetch project details to get the friendly name
+    let projectName = 'UnnamedProject';
+    try {
+      const projectResponse = await fetch(`https://${spaceUrl}/api/laml/2010-04-01/Accounts/${projectId}`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': `Basic ${auth}`
+        }
+      });
+      
+      if (projectResponse.ok) {
+        const projectData = await projectResponse.json();
+        projectName = projectData.friendly_name || projectData.name || 'UnnamedProject';
+      }
+    } catch (error) {
+      console.warn('Could not fetch project name:', error.message);
+    }
+    
+    // Clean project name for filename (remove invalid characters)
+    const cleanProjectName = projectName.replace(/[^a-zA-Z0-9_-]/g, '_');
+    
     // Fetch all bins with pagination
     async function fetchAllBins() {
       const allBins = [];
@@ -115,21 +137,19 @@ exports.handler = async (event, context) => {
     const bins = await fetchAllBins();
     
     if (bins.length === 0) {
+      // Return empty CSV with headers
+      const headers = ['Bin SID', 'Name', 'Date Created', 'Date Updated', 'Date Last Accessed', 'Account SID', 'Request URL', 'Num Requests', 'API Version', 'Contents', 'Contents Length', 'URI'];
+      const csvContent = headers.join(',');
+      const filename = `Bins-${cleanProjectName}.csv`;
+      
       return {
         statusCode: 200,
         headers: {
           'Access-Control-Allow-Origin': '*',
-          'Content-Type': 'application/json'
+          'Content-Type': 'text/csv',
+          'Content-Disposition': `attachment; filename=${filename}`
         },
-        body: JSON.stringify({
-          success: true,
-          message: 'No bins found',
-          data: [],
-          summary: {
-            totalBins: 0,
-            detailedBins: 0
-          }
-        }, null, 2)
+        body: csvContent
       };
     }
     
@@ -162,47 +182,56 @@ exports.handler = async (event, context) => {
     
     console.log(`Successfully fetched details for ${detailedBins.length} bins`);
     
-    // Format the data for table display
-    const tableData = detailedBins.map((bin, index) => ({
-      index: index + 1,
-      sid: bin.sid || 'N/A',
-      name: bin.friendly_name || bin.name || 'Unnamed',
-      dateCreated: bin.date_created || 'N/A',
-      dateUpdated: bin.date_updated || 'N/A',
-      dateLastAccessed: bin.date_last_accessed || 'Never',
-      accountSid: bin.account_sid || 'N/A',
-      requestUrl: bin.request_url || 'N/A',
-      numRequests: bin.num_requests || 0,
-      apiVersion: bin.api_version || 'N/A',
-      contentsPreview: bin.contents ? 
-        (bin.contents.length > 100 ? bin.contents.substring(0, 100) + '...' : bin.contents) : 
-        'No content',
-      contentsLength: bin.contents ? bin.contents.length : 0,
-      uri: bin.uri || 'N/A'
+    // Convert to CSV format
+    const data = detailedBins.map((bin) => ({
+      binSid: bin.sid || '',
+      name: bin.friendly_name || bin.name || '',
+      dateCreated: bin.date_created || '',
+      dateUpdated: bin.date_updated || '',
+      dateLastAccessed: bin.date_last_accessed || '',
+      accountSid: bin.account_sid || '',
+      requestUrl: bin.request_url || '',
+      numRequests: bin.num_requests || '',
+      apiVersion: bin.api_version || '',
+      contents: bin.contents || '',
+      contentsLength: bin.contents ? bin.contents.length : '',
+      uri: bin.uri || ''
     }));
-    
+
+    // Create CSV content
+    const headers = ['Bin SID', 'Name', 'Date Created', 'Date Updated', 'Date Last Accessed', 'Account SID', 'Request URL', 'Num Requests', 'API Version', 'Contents', 'Contents Length', 'URI'];
+    const csvContent = [
+      headers.join(','),
+      ...data.map(row => [
+        `"${row.binSid}"`,
+        `"${row.name}"`,
+        `"${row.dateCreated}"`,
+        `"${row.dateUpdated}"`,
+        `"${row.dateLastAccessed}"`,
+        `"${row.accountSid}"`,
+        `"${row.requestUrl}"`,
+        `"${row.numRequests}"`,
+        `"${row.apiVersion}"`,
+        `"${row.contents.replace(/"/g, '""')}"`, // Escape quotes in contents
+        `"${row.contentsLength}"`,
+        `"${row.uri}"`
+      ].join(','))
+    ].join('\n');
+
+    // Create filename with project name and API type
+    const filename = `Bins-${cleanProjectName}.csv`;
+
     return {
       statusCode: 200,
       headers: {
         'Access-Control-Allow-Origin': '*',
-        'Content-Type': 'application/json'
+        'Content-Type': 'text/csv',
+        'Content-Disposition': `attachment; filename=${filename}`
       },
-      body: JSON.stringify({
-        success: true,
-        message: `Successfully fetched ${detailedBins.length} bins with detailed information`,
-        tableData: tableData,
-        rawData: detailedBins,
-        summary: {
-          totalBins: bins.length,
-          detailedBins: detailedBins.length,
-          withContents: detailedBins.filter(bin => bin.contents && bin.contents.trim()).length,
-          averageContentLength: detailedBins.reduce((sum, bin) => sum + (bin.contents ? bin.contents.length : 0), 0) / detailedBins.length,
-          recentlyAccessed: detailedBins.filter(bin => bin.date_last_accessed && bin.date_last_accessed !== 'Never').length
-        }
-      }, null, 2)
+      body: csvContent
     };
   } catch (error) {
-    console.error('Error in test-bins-api:', error);
+    console.error('Error in generate-bins-csv:', error);
     return {
       statusCode: 500,
       headers: {
@@ -210,9 +239,8 @@ exports.handler = async (event, context) => {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({ 
-        error: error.message,
-        stack: error.stack
-      }, null, 2)
+        error: error.message
+      })
     };
   }
 };

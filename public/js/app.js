@@ -342,10 +342,16 @@ class SignalWireApp {
     }
     
     async processApiResponse(endpoint, response) {
-        if (endpoint === '/test-bins-api') {
-            await this.handleSpecialEndpoints(endpoint, response);
+        if (endpoint === '/test-bins-api' || endpoint === '/generate-bins-csv') {
+            // Check if response is JSON (test endpoint) or CSV (regular endpoint)
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                await this.handleSpecialEndpoints(endpoint, response);
+            } else {
+                await this.handleRegularCSVEndpoint(response);
+            }
         } else {
-            await this.handleRegularCSVEndpoint(response);
+            await this.handleSpecialEndpoints(endpoint, response);
         }
         
         this.uiManager.hideStatus();

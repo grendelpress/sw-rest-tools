@@ -21,6 +21,7 @@ export class Analytics {
             case 'Faxes':
                 return this.generateFaxesSummary();
             case 'cXML Bins':
+            case 'Bins':
                 return this.generateBinsSummary();
             default:
                 return this.generateGenericSummary();
