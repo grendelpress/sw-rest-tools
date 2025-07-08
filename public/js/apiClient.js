@@ -27,7 +27,8 @@ export class APIClient {
             '/generate-faxes-csv': 'Faxes',
             '/generate-calls-csv': 'Calls',
             '/generate-recordings-csv': 'Recordings',
-            '/generate-bins-csv': 'cXML Bins'
+            '/generate-bins-csv': 'cXML Bins',
+            '/test-bins-api': 'Test Bins API'
         };
         return titles[endpoint] || 'Data';
     }
