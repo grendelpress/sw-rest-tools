@@ -36,27 +36,46 @@ exports.handler = async (event, context) => {
     // Clean project name for filename (remove invalid characters)
     const cleanProjectName = projectName.replace(/[^a-zA-Z0-9_-]/g, '_');
     
-    // Build query options for date filtering
-    const queryOptions = {};
+    // Make direct HTTP request to LaML Bins API since it might not be in the SDK
+    const baseUrl = `https://${spaceUrl}/api/laml/2010-04-01/Accounts/${projectId}/LamlBins`;
+    const auth = Buffer.from(`${projectId}:${authToken}`).toString('base64');
+    
+    // Build query parameters for date filtering
+    const queryParams = new URLSearchParams();
     if (startDate) {
-      queryOptions.dateCreatedAfter = new Date(startDate + 'T00:00:00Z');
+      queryParams.append('DateCreatedAfter', startDate + 'T00:00:00Z');
     }
     if (endDate) {
-      queryOptions.dateCreatedBefore = new Date(endDate + 'T23:59:59Z');
+      queryParams.append('DateCreatedBefore', endDate + 'T23:59:59Z');
     }
     
-    const bins = await client.api.accounts(projectId).lamlBins.list(queryOptions);
+    const url = queryParams.toString() ? `${baseUrl}?${queryParams}` : baseUrl;
+    
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Basic ${auth}`,
+        'Accept': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+    }
+    
+    const result = await response.json();
+    const bins = result.laml_bins || [];
     
     const data = bins.map((record) => ({
       binSid: record.sid || '',
       name: record.name || '',
-      dateCreated: record.dateCreated ? record.dateCreated.toString() : '',
-      dateUpdated: record.dateUpdated ? record.dateUpdated.toString() : '',
-      dateLastAccessed: record.dateLastAccessed ? record.dateLastAccessed.toString() : '',
-      accountSid: record.accountSid || '',
+      dateCreated: record.date_created || '',
+      dateUpdated: record.date_updated || '',
+      dateLastAccessed: record.date_last_accessed || '',
+      accountSid: record.account_sid || '',
       contents: record.contents || '',
-      requestUrl: record.requestUrl || '',
-      apiVersion: record.apiVersion || '',
+      requestUrl: record.request_url || '',
+      apiVersion: record.api_version || '',
       uri: record.uri || ''
     }));
 
