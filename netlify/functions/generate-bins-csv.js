@@ -25,7 +25,7 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    const { projectId, authToken, spaceUrl, startDate, endDate } = JSON.parse(event.body);
+    const { projectId, authToken, spaceUrl } = JSON.parse(event.body);
     
     if (!projectId || !authToken || !spaceUrl) {
       throw new Error('Missing required credentials: projectId, authToken, and spaceUrl are required');
@@ -38,31 +38,12 @@ exports.handler = async (event, context) => {
     // Create basic auth header from provided credentials
     const auth = Buffer.from(`${projectId}:${authToken}`).toString('base64');
     
-    // Fetch project details to get the friendly name
-    const projectResponse = await fetch(`https://${spaceUrl}/api/laml/2010-04-01/Accounts/${projectId}`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Basic ${auth}`,
-        'Accept': 'application/json'
-      }
-    });
-    
-    if (!projectResponse.ok) {
-      throw new Error(`Failed to fetch project details: ${projectResponse.status}`);
-    }
-    
-    const project = await projectResponse.json();
-    const projectName = project.friendly_name || project.friendlyName || 'UnnamedProject';
-    
-    // Clean project name for filename (remove invalid characters)
-    const cleanProjectName = projectName.replace(/[^a-zA-Z0-9_-]/g, '_');
-    
     // Fetch all bins with pagination
     async function fetchAllBins() {
       const allBins = [];
       let nextPageUri = null;
       let pageCount = 0;
-      const maxPages = 100; // Safety limit
+      const maxPages = 10; // Reasonable limit for testing
       
       do {
         pageCount++;
@@ -71,22 +52,7 @@ exports.handler = async (event, context) => {
         if (nextPageUri) {
           url = `https://${spaceUrl}${nextPageUri}`;
         } else {
-          // Build initial URL
-          const baseUrl = `https://${spaceUrl}/api/laml/2010-04-01/Accounts/${projectId}/LamlBins`;
-          const queryParams = new URLSearchParams();
-          
-          // Add date filters if provided
-          if (startDate) {
-            queryParams.append('DateCreatedAfter', startDate + 'T00:00:00Z');
-          }
-          if (endDate) {
-            queryParams.append('DateCreatedBefore', endDate + 'T23:59:59Z');
-          }
-          
-          // Set page size to maximum
-          queryParams.append('PageSize', '50');
-          
-          url = queryParams.toString() ? `${baseUrl}?${queryParams}` : baseUrl;
+          url = `https://${spaceUrl}/api/laml/2010-04-01/Accounts/${projectId}/LamlBins?PageSize=50`;
         }
         
         console.log(`Fetching bins page ${pageCount}: ${url}`);
@@ -149,24 +115,27 @@ exports.handler = async (event, context) => {
     const bins = await fetchAllBins();
     
     if (bins.length === 0) {
-      // Return empty CSV with headers
-      const headers = ['Bin SID', 'Name', 'Date Created', 'Date Updated', 'Date Last Accessed', 'Account SID', 'Contents', 'Request URL', 'Num Requests', 'API Version', 'URI'];
-      const csvContent = headers.join(',');
-      
       return {
         statusCode: 200,
         headers: {
           'Access-Control-Allow-Origin': '*',
-          'Content-Type': 'text/csv',
-          'Content-Disposition': `attachment; filename=Bins-${cleanProjectName}.csv`
+          'Content-Type': 'application/json'
         },
-        body: csvContent
+        body: JSON.stringify({
+          success: true,
+          message: 'No bins found',
+          data: [],
+          summary: {
+            totalBins: 0,
+            detailedBins: 0
+          }
+        }, null, 2)
       };
     }
     
     // Fetch detailed information for each bin (with rate limiting)
     const detailedBins = [];
-    const batchSize = 5; // Process 5 bins at a time to avoid rate limits
+    const batchSize = 3; // Smaller batch size for testing
     
     console.log(`Fetching detailed information for ${bins.length} bins...`);
     
@@ -185,69 +154,65 @@ exports.handler = async (event, context) => {
         }
       });
       
-      // Small delay between batches to be respectful to the API
+      // Small delay between batches
       if (i + batchSize < bins.length) {
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise(resolve => setTimeout(resolve, 200));
       }
     }
     
     console.log(`Successfully fetched details for ${detailedBins.length} bins`);
     
-    // Map the data to CSV format
-    const data = detailedBins.map((record) => ({
-      binSid: record.sid || '',
-      name: record.friendly_name || record.name || '',
-      dateCreated: record.date_created || '',
-      dateUpdated: record.date_updated || '',
-      dateLastAccessed: record.date_last_accessed || '',
-      accountSid: record.account_sid || projectId,
-      contents: record.contents || '',
-      requestUrl: record.request_url || '',
-      numRequests: record.num_requests || '',
-      apiVersion: record.api_version || '',
-      uri: record.uri || ''
+    // Format the data for table display
+    const tableData = detailedBins.map((bin, index) => ({
+      index: index + 1,
+      sid: bin.sid || 'N/A',
+      name: bin.friendly_name || bin.name || 'Unnamed',
+      dateCreated: bin.date_created || 'N/A',
+      dateUpdated: bin.date_updated || 'N/A',
+      dateLastAccessed: bin.date_last_accessed || 'Never',
+      accountSid: bin.account_sid || 'N/A',
+      requestUrl: bin.request_url || 'N/A',
+      numRequests: bin.num_requests || 0,
+      apiVersion: bin.api_version || 'N/A',
+      contentsPreview: bin.contents ? 
+        (bin.contents.length > 100 ? bin.contents.substring(0, 100) + '...' : bin.contents) : 
+        'No content',
+      contentsLength: bin.contents ? bin.contents.length : 0,
+      uri: bin.uri || 'N/A'
     }));
-
-    // Create CSV content
-    const headers = ['Bin SID', 'Name', 'Date Created', 'Date Updated', 'Date Last Accessed', 'Account SID', 'Contents', 'Request URL', 'Num Requests', 'API Version', 'URI'];
-    const csvContent = [
-      headers.join(','),
-      ...data.map(row => [
-        `"${row.binSid}"`,
-        `"${row.name}"`,
-        `"${row.dateCreated}"`,
-        `"${row.dateUpdated}"`,
-        `"${row.dateLastAccessed}"`,
-        `"${row.accountSid}"`,
-        `"${row.contents.replace(/"/g, '""')}"`, // Escape quotes in XML content
-        `"${row.requestUrl}"`,
-        `"${row.numRequests}"`,
-        `"${row.apiVersion}"`,
-        `"${row.uri}"`
-      ].join(','))
-    ].join('\n');
-
-    // Create filename with project name and API type
-    const filename = `Bins-${cleanProjectName}.csv`;
-
+    
     return {
       statusCode: 200,
       headers: {
         'Access-Control-Allow-Origin': '*',
-        'Content-Type': 'text/csv',
-        'Content-Disposition': `attachment; filename=${filename}`
+        'Content-Type': 'application/json'
       },
-      body: csvContent
+      body: JSON.stringify({
+        success: true,
+        message: `Successfully fetched ${detailedBins.length} bins with detailed information`,
+        tableData: tableData,
+        rawData: detailedBins,
+        summary: {
+          totalBins: bins.length,
+          detailedBins: detailedBins.length,
+          withContents: detailedBins.filter(bin => bin.contents && bin.contents.trim()).length,
+          averageContentLength: detailedBins.reduce((sum, bin) => sum + (bin.contents ? bin.contents.length : 0), 0) / detailedBins.length,
+          recentlyAccessed: detailedBins.filter(bin => bin.date_last_accessed && bin.date_last_accessed !== 'Never').length
+        }
+      }, null, 2)
     };
   } catch (error) {
-    console.error('Error in generate-bins-csv:', error);
+    console.error('Error in test-bins-api:', error);
     return {
       statusCode: 500,
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ error: error.message })
+      body: JSON.stringify({ 
+        error: error.message,
+        stack: error.stack
+      }, null, 2)
     };
   }
 };
