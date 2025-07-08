@@ -238,34 +238,20 @@ class SignalWireApp {
         
         try {
             const response = await APIClient.makeRequest(endpoint, this.credentials, dateParams);
-            const csvText = await response.text();
             
-            // Extract project name from the filename in the response headers
-            const filename = APIClient.extractFilename(response);
-            const projectNameMatch = filename.match(/^[^-]+-(.+)\.csv$/);
-            this.currentProjectName = projectNameMatch ? projectNameMatch[1] : '';
+            // Process the response based on endpoint type
+            await this.processApiResponse(endpoint, response);
             
-            // Parse and display data
-            const originalData = CSVUtils.parseCSV(csvText);
-            this.dataFilter.setOriginalData(originalData);
-            
-            // Show data display
-            this.uiManager.showDataDisplay(this.currentDataType);
-            
-            // Copy main form date range to filter inputs
-            if (this.startDateInput.value) {
-                this.filterStartDateInput.value = this.startDateInput.value;
-            }
-            if (this.endDateInput.value) {
-                this.filterEndDateInput.value = this.endDateInput.value;
-            }
-            
-            this.dataTable.render(originalData, originalData.length);
+        } catch (error) {
+            alert('Error: ' + error.message);
             this.uiManager.hideStatus();
-            
-            // Reset analytics toggle
-            this.resetAnalyticsToggle();
-        } else if (endpoint === '/test-bins-api') {
+            this.uiManager.showDateRangeSection();
+            this.uiManager.showApiLinks();
+        }
+    }
+    
+    async handleSpecialEndpoints(endpoint, response) {
+        if (endpoint === '/test-bins-api') {
             // Handle test bins API differently - show JSON response
             const jsonResponse = await response.json();
             
@@ -311,44 +297,51 @@ class SignalWireApp {
                 `;
             } else {
                 alert('Error: ' + (jsonResponse.error || 'Failed to fetch bins data'));
+                throw new Error(jsonResponse.error || 'Failed to fetch bins data');
             }
-            
-            this.uiManager.hideStatus();
-            this.resetAnalyticsToggle();
         } else {
-            // Handle regular CSV endpoints
-            const csvText = await response.text();
-            
-            // Extract project name from the filename in the response headers
-            const filename = APIClient.extractFilename(response);
-            const projectNameMatch = filename.match(/^[^-]+-(.+)\.csv$/);
-            this.currentProjectName = projectNameMatch ? projectNameMatch[1] : '';
-            
-            // Parse and display data
-            const originalData = CSVUtils.parseCSV(csvText);
-            this.dataFilter.setOriginalData(originalData);
-            
-            // Show data display
-            this.uiManager.showDataDisplay(this.currentDataType);
-            
-            // Copy main form date range to filter inputs
-            if (this.startDateInput.value) {
-                this.filterStartDateInput.value = this.startDateInput.value;
-            }
-            if (this.endDateInput.value) {
-                this.filterEndDateInput.value = this.endDateInput.value;
-            }
-            
-            this.dataTable.render(originalData, originalData.length);
-            this.uiManager.hideStatus();
-            
-            // Reset analytics toggle
-        } catch (error) {
-            alert('Error: ' + error.message);
-            this.uiManager.hideStatus();
-            this.uiManager.showDateRangeSection();
-            this.uiManager.showApiLinks();
+            return this.handleRegularCSVEndpoint(response);
         }
+    }
+    
+    async handleRegularCSVEndpoint(response) {
+        // Handle regular CSV endpoints
+        const csvText = await response.text();
+        
+        // Extract project name from the filename in the response headers
+        const filename = APIClient.extractFilename(response);
+        const projectNameMatch = filename.match(/^[^-]+-(.+)\.csv$/);
+        this.currentProjectName = projectNameMatch ? projectNameMatch[1] : '';
+        
+        // Parse and display data
+        const originalData = CSVUtils.parseCSV(csvText);
+        this.dataFilter.setOriginalData(originalData);
+        
+        // Show data display
+        this.uiManager.showDataDisplay(this.currentDataType);
+        
+        // Copy main form date range to filter inputs
+        if (this.startDateInput.value) {
+            this.filterStartDateInput.value = this.startDateInput.value;
+        }
+        if (this.endDateInput.value) {
+            this.filterEndDateInput.value = this.endDateInput.value;
+        }
+        
+        this.dataTable.render(originalData, originalData.length);
+        
+        // Reset analytics toggle
+        this.resetAnalyticsToggle();
+    }
+    
+    async processApiResponse(endpoint, response) {
+        if (endpoint === '/test-bins-api') {
+            await this.handleSpecialEndpoints(endpoint, response);
+        } else {
+            await this.handleRegularCSVEndpoint(response);
+        }
+        
+        this.uiManager.hideStatus();
     }
 }
 
