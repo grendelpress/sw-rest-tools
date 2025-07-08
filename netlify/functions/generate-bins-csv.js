@@ -83,7 +83,7 @@ exports.handler = async (event, context) => {
             }
             
             // Set page size to maximum
-            queryParams.append('PageSize', '1000');
+            queryParams.append('PageSize', '50');
             
             url = queryParams.toString() ? `${baseUrl}?${queryParams}` : baseUrl;
           }
