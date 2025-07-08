@@ -36,92 +36,75 @@ exports.handler = async (event, context) => {
     // Clean project name for filename (remove invalid characters)
     const cleanProjectName = projectName.replace(/[^a-zA-Z0-9_-]/g, '_');
     
-    // Build query options for date filtering
-    const queryOptions = {};
-    if (startDate) {
-      queryOptions.dateCreatedAfter = new Date(startDate + 'T00:00:00Z');
-    }
-    if (endDate) {
-      queryOptions.dateCreatedBefore = new Date(endDate + 'T23:59:59Z');
+    // Use direct API calls for LaML bins since SDK method doesn't return all results
+    const auth = Buffer.from(`${projectId}:${authToken}`).toString('base64');
+    
+    async function fetchAllBins() {
+      const allBins = [];
+      let nextPageUri = null;
+      let pageCount = 0;
+      const maxPages = 100; // Safety limit
+      
+      do {
+        pageCount++;
+        let url;
+        
+        if (nextPageUri) {
+          // Use the next page URI provided by the API
+          url = `https://${spaceUrl}${nextPageUri}`;
+        } else {
+          // Build initial URL
+          const baseUrl = `https://${spaceUrl}/api/laml/2010-04-01/Accounts/${projectId}/LamlBins`;
+          const queryParams = new URLSearchParams();
+          
+          // Add date filters if provided
+          if (startDate) {
+            queryParams.append('DateCreatedAfter', startDate + 'T00:00:00Z');
+          }
+          if (endDate) {
+            queryParams.append('DateCreatedBefore', endDate + 'T23:59:59Z');
+          }
+          
+          // Set page size to maximum
+          queryParams.append('PageSize', '50');
+          
+          url = queryParams.toString() ? `${baseUrl}?${queryParams}` : baseUrl;
+        }
+        
+        console.log(`Fetching page ${pageCount}: ${url}`);
+        
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Basic ${auth}`,
+            'Accept': 'application/json'
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        const pageBins = result.laml_bins || [];
+        
+        console.log(`Page ${pageCount}: Found ${pageBins.length} bins`);
+        
+        if (pageBins.length > 0) {
+          allBins.push(...pageBins);
+        }
+        
+        // Check for next page URI in the response
+        nextPageUri = result.next_page_uri || null;
+        
+      } while (nextPageUri && pageCount < maxPages);
+      
+      console.log(`Total bins fetched: ${allBins.length} across ${pageCount} pages`);
+      return allBins;
     }
     
-    // Try to use the SDK method for LaML bins - this should handle pagination automatically
-    let bins;
-    try {
-      // First try the direct lamlBins method if it exists
-      bins = await client.api.accounts(projectId).lamlBins.list(queryOptions);
-    } catch (sdkError) {
-      console.log('SDK method failed, falling back to direct API calls:', sdkError.message);
-      
-      // Fallback to direct API calls but with proper pagination
-      const auth = Buffer.from(`${projectId}:${authToken}`).toString('base64');
-      
-      async function fetchAllBins() {
-        const allBins = [];
-        let nextPageUri = null;
-        let pageCount = 0;
-        const maxPages = 100; // Safety limit
-        
-        do {
-          pageCount++;
-          let url;
-          
-          if (nextPageUri) {
-            // Use the next page URI provided by the API
-            url = `https://${spaceUrl}${nextPageUri}`;
-          } else {
-            // Build initial URL
-            const baseUrl = `https://${spaceUrl}/api/laml/2010-04-01/Accounts/${projectId}/LamlBins`;
-            const queryParams = new URLSearchParams();
-            
-            // Add date filters if provided
-            if (startDate) {
-              queryParams.append('DateCreatedAfter', startDate + 'T00:00:00Z');
-            }
-            if (endDate) {
-              queryParams.append('DateCreatedBefore', endDate + 'T23:59:59Z');
-            }
-            
-            // Set page size to maximum
-            queryParams.append('PageSize', '50');
-            
-            url = queryParams.toString() ? `${baseUrl}?${queryParams}` : baseUrl;
-          }
-          
-          console.log(`Fetching page ${pageCount}: ${url}`);
-          
-          const response = await fetch(url, {
-            method: 'GET',
-            headers: {
-              'Authorization': `Basic ${auth}`,
-              'Accept': 'application/json'
-            }
-          });
-          
-          if (!response.ok) {
-            throw new Error(`API request failed: ${response.status} ${response.statusText}`);
-          }
-          
-          const result = await response.json();
-          const pageBins = result.laml_bins || [];
-          
-          console.log(`Page ${pageCount}: Found ${pageBins.length} bins`);
-          
-          if (pageBins.length > 0) {
-            allBins.push(...pageBins);
-          }
-          
-          // Check for next page URI in the response
-          nextPageUri = result.next_page_uri || null;
-          
-        } while (nextPageUri && pageCount < maxPages);
-        
-        console.log(`Total bins fetched: ${allBins.length} across ${pageCount} pages`);
-        return allBins;
-      }
-      
-      bins = await fetchAllBins();
-    }
+    // Directly call fetchAllBins() instead of trying SDK first
+    const bins = await fetchAllBins();
     
     const data = bins.map((record) => ({
       binSid: record.sid || '',
