@@ -36,83 +36,103 @@ exports.handler = async (event, context) => {
     // Clean project name for filename (remove invalid characters)
     const cleanProjectName = projectName.replace(/[^a-zA-Z0-9_-]/g, '_');
     
-    // Use direct API calls like your working code, but with pagination
-    const auth = Buffer.from(`${projectId}:${authToken}`).toString('base64');
-    
-    // Function to fetch all pages of results using direct API calls
-    async function fetchAllBins() {
-      const allBins = [];
-      let page = 0;
-      let hasMorePages = true;
-      const maxPages = 100; // Safety limit
-      
-      while (hasMorePages && page < maxPages) {
-        // Build URL with pagination and filters
-        const baseUrl = `https://${spaceUrl}/api/laml/2010-04-01/Accounts/${projectId}/LamlBins`;
-        const queryParams = new URLSearchParams();
-        
-        // Add pagination
-        queryParams.append('Page', page.toString());
-        queryParams.append('PageSize', '1000'); // Maximum page size
-        
-        // Add date filters if provided
-        if (startDate) {
-          queryParams.append('DateCreatedAfter', startDate + 'T00:00:00Z');
-        }
-        if (endDate) {
-          queryParams.append('DateCreatedBefore', endDate + 'T23:59:59Z');
-        }
-        
-        const url = `${baseUrl}?${queryParams}`;
-        console.log(`Fetching page ${page}: ${url}`);
-        
-        const response = await fetch(url, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Basic ${auth}`,
-            'Accept': 'application/json'
-          }
-        });
-        
-        if (!response.ok) {
-          throw new Error(`API request failed: ${response.status} ${response.statusText}`);
-        }
-        
-        const result = await response.json();
-        const bins = result.laml_bins || [];
-        
-        console.log(`Page ${page}: Found ${bins.length} bins`);
-        
-        if (bins.length === 0) {
-          hasMorePages = false;
-        } else {
-          allBins.push(...bins);
-          page++;
-          
-          // If we got less than the page size, we're on the last page
-          if (bins.length < 1000) {
-            hasMorePages = false;
-          }
-        }
-      }
-      
-      console.log(`Total bins fetched: ${allBins.length} across ${page} pages`);
-      return allBins;
+    // Build query options for date filtering
+    const queryOptions = {};
+    if (startDate) {
+      queryOptions.dateCreatedAfter = new Date(startDate + 'T00:00:00Z');
+    }
+    if (endDate) {
+      queryOptions.dateCreatedBefore = new Date(endDate + 'T23:59:59Z');
     }
     
-    // Fetch all bins across all pages
-    const bins = await fetchAllBins();
+    // Try to use the SDK method for LaML bins - this should handle pagination automatically
+    let bins;
+    try {
+      // First try the direct lamlBins method if it exists
+      bins = await client.api.accounts(projectId).lamlBins.list(queryOptions);
+    } catch (sdkError) {
+      console.log('SDK method failed, falling back to direct API calls:', sdkError.message);
+      
+      // Fallback to direct API calls but with proper pagination
+      const auth = Buffer.from(`${projectId}:${authToken}`).toString('base64');
+      
+      async function fetchAllBins() {
+        const allBins = [];
+        let nextPageUri = null;
+        let pageCount = 0;
+        const maxPages = 100; // Safety limit
+        
+        do {
+          pageCount++;
+          let url;
+          
+          if (nextPageUri) {
+            // Use the next page URI provided by the API
+            url = `https://${spaceUrl}${nextPageUri}`;
+          } else {
+            // Build initial URL
+            const baseUrl = `https://${spaceUrl}/api/laml/2010-04-01/Accounts/${projectId}/LamlBins`;
+            const queryParams = new URLSearchParams();
+            
+            // Add date filters if provided
+            if (startDate) {
+              queryParams.append('DateCreatedAfter', startDate + 'T00:00:00Z');
+            }
+            if (endDate) {
+              queryParams.append('DateCreatedBefore', endDate + 'T23:59:59Z');
+            }
+            
+            // Set page size to maximum
+            queryParams.append('PageSize', '1000');
+            
+            url = queryParams.toString() ? `${baseUrl}?${queryParams}` : baseUrl;
+          }
+          
+          console.log(`Fetching page ${pageCount}: ${url}`);
+          
+          const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Basic ${auth}`,
+              'Accept': 'application/json'
+            }
+          });
+          
+          if (!response.ok) {
+            throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+          }
+          
+          const result = await response.json();
+          const pageBins = result.laml_bins || [];
+          
+          console.log(`Page ${pageCount}: Found ${pageBins.length} bins`);
+          
+          if (pageBins.length > 0) {
+            allBins.push(...pageBins);
+          }
+          
+          // Check for next page URI in the response
+          nextPageUri = result.next_page_uri || null;
+          
+        } while (nextPageUri && pageCount < maxPages);
+        
+        console.log(`Total bins fetched: ${allBins.length} across ${pageCount} pages`);
+        return allBins;
+      }
+      
+      bins = await fetchAllBins();
+    }
     
     const data = bins.map((record) => ({
       binSid: record.sid || '',
-      name: record.name || '',
-      dateCreated: record.date_created || '',
-      dateUpdated: record.date_updated || '',
-      dateLastAccessed: record.date_last_accessed || '',
-      accountSid: record.account_sid || '',
+      name: record.friendlyName || record.name || '',
+      dateCreated: record.dateCreated ? record.dateCreated.toString() : (record.date_created || ''),
+      dateUpdated: record.dateUpdated ? record.dateUpdated.toString() : (record.date_updated || ''),
+      dateLastAccessed: record.dateLastAccessed ? record.dateLastAccessed.toString() : (record.date_last_accessed || ''),
+      accountSid: record.accountSid || record.account_sid || '',
       contents: record.contents || '',
-      requestUrl: record.request_url || '',
-      apiVersion: record.api_version || '',
+      requestUrl: record.requestUrl || record.request_url || '',
+      apiVersion: record.apiVersion || record.api_version || '',
       uri: record.uri || ''
     }));
 
