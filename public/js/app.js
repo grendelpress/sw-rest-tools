@@ -265,7 +265,84 @@ class SignalWireApp {
             
             // Reset analytics toggle
             this.resetAnalyticsToggle();
+        } else if (endpoint === '/test-bins-api') {
+            // Handle test bins API differently - show JSON response
+            const jsonResponse = await response.json();
             
+            if (jsonResponse.success && jsonResponse.tableData) {
+                // Convert table data to CSV-like format for display
+                const tableHeaders = [
+                    'Index', 'SID', 'Name', 'Date Created', 'Date Updated', 
+                    'Date Last Accessed', 'Account SID', 'Request URL', 
+                    'Num Requests', 'API Version', 'Contents Preview', 
+                    'Contents Length', 'URI'
+                ];
+                
+                const csvLikeData = jsonResponse.tableData.map(row => ({
+                    'Index': row.index,
+                    'SID': row.sid,
+                    'Name': row.name,
+                    'Date Created': row.dateCreated,
+                    'Date Updated': row.dateUpdated,
+                    'Date Last Accessed': row.dateLastAccessed,
+                    'Account SID': row.accountSid,
+                    'Request URL': row.requestUrl,
+                    'Num Requests': row.numRequests,
+                    'API Version': row.apiVersion,
+                    'Contents Preview': row.contentsPreview,
+                    'Contents Length': row.contentsLength,
+                    'URI': row.uri
+                }));
+                
+                this.dataFilter.setOriginalData(csvLikeData);
+                this.uiManager.showDataDisplay(this.currentDataType);
+                this.dataTable.render(csvLikeData, csvLikeData.length);
+                
+                // Show summary information
+                const summary = jsonResponse.summary;
+                const summaryText = `Summary: ${summary.totalBins} total bins, ${summary.detailedBins} with details, ${summary.withContents} with contents, avg content length: ${Math.round(summary.averageContentLength)} chars`;
+                
+                // Add summary to the data title
+                document.getElementById('dataTitle').innerHTML = `
+                    ${this.currentDataType}
+                    <div style="font-size: 14px; font-weight: normal; color: #666; margin-top: 5px;">
+                        ${summaryText}
+                    </div>
+                `;
+            } else {
+                alert('Error: ' + (jsonResponse.error || 'Failed to fetch bins data'));
+            }
+            
+            this.uiManager.hideStatus();
+            this.resetAnalyticsToggle();
+        } else {
+            // Handle regular CSV endpoints
+            const csvText = await response.text();
+            
+            // Extract project name from the filename in the response headers
+            const filename = APIClient.extractFilename(response);
+            const projectNameMatch = filename.match(/^[^-]+-(.+)\.csv$/);
+            this.currentProjectName = projectNameMatch ? projectNameMatch[1] : '';
+            
+            // Parse and display data
+            const originalData = CSVUtils.parseCSV(csvText);
+            this.dataFilter.setOriginalData(originalData);
+            
+            // Show data display
+            this.uiManager.showDataDisplay(this.currentDataType);
+            
+            // Copy main form date range to filter inputs
+            if (this.startDateInput.value) {
+                this.filterStartDateInput.value = this.startDateInput.value;
+            }
+            if (this.endDateInput.value) {
+                this.filterEndDateInput.value = this.endDateInput.value;
+            }
+            
+            this.dataTable.render(originalData, originalData.length);
+            this.uiManager.hideStatus();
+            
+            // Reset analytics toggle
         } catch (error) {
             alert('Error: ' + error.message);
             this.uiManager.hideStatus();

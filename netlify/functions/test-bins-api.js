@@ -8,62 +8,179 @@ exports.handler = async (event, context) => {
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': 'Content-Type',
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS'
+        'Access-Control-Allow-Methods': 'POST, OPTIONS'
       },
       body: ''
     };
   }
 
-  try {
-    console.log('Making direct API call to LaML bins endpoint...');
-    
-    // Make the exact same request as your curl command
-    const response = await fetch('https://sassyspace.signalwire.com/api/laml/2010-04-01/Accounts/9af8a716-ccba-4a38-9a80-c74f3cc31df7/LamlBins', {
-      method: 'GET',
+  if (event.httpMethod !== 'POST') {
+    return {
+      statusCode: 405,
       headers: {
-        'Accept': 'application/json',
-        'Authorization': 'Basic OWFmOGE3MTYtY2NiYS00YTM4LTlhODAtYzc0ZjNjYzMxZGY3OlBUNTMyZjMwMWE2ZDAwN2EyZmRjMDlkNDhiNGYxODRlYjBiNjJlNjk2NzBjMjdlOTkx'
-      }
-    });
+        'Access-Control-Allow-Origin': '*'
+      },
+      body: JSON.stringify({ error: 'Method not allowed' })
+    };
+  }
 
-    console.log('Response status:', response.status);
-    console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-
-    if (!response.ok) {
-      throw new Error(`API request failed: ${response.status} ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    console.log('Response data keys:', Object.keys(data));
-    console.log('Number of bins:', data.laml_bins ? data.laml_bins.length : 'No laml_bins property');
+  try {
+    const { projectId, authToken, spaceUrl } = JSON.parse(event.body);
     
-    // Test fetching details for the first bin if available
-    let firstBinDetails = null;
-    if (data.laml_bins && data.laml_bins.length > 0) {
-      const firstBinUri = data.laml_bins[0].uri;
-      console.log('Fetching details for first bin:', firstBinUri);
+    if (!projectId || !authToken || !spaceUrl) {
+      throw new Error('Missing required credentials: projectId, authToken, and spaceUrl are required');
+    }
+    
+    console.log('Using provided credentials for API call...');
+    console.log('Project ID:', projectId);
+    console.log('Space URL:', spaceUrl);
+    
+    // Create basic auth header from provided credentials
+    const auth = Buffer.from(`${projectId}:${authToken}`).toString('base64');
+    
+    // Fetch all bins with pagination
+    async function fetchAllBins() {
+      const allBins = [];
+      let nextPageUri = null;
+      let pageCount = 0;
+      const maxPages = 10; // Reasonable limit for testing
       
-      try {
-        const detailResponse = await fetch(`https://sassyspace.signalwire.com${firstBinUri}`, {
+      do {
+        pageCount++;
+        let url;
+        
+        if (nextPageUri) {
+          url = `https://${spaceUrl}${nextPageUri}`;
+        } else {
+          url = `https://${spaceUrl}/api/laml/2010-04-01/Accounts/${projectId}/LamlBins?PageSize=50`;
+        }
+        
+        console.log(`Fetching bins page ${pageCount}: ${url}`);
+        
+        const response = await fetch(url, {
           method: 'GET',
           headers: {
             'Accept': 'application/json',
-            'Authorization': 'Basic OWFmOGE3MTYtY2NiYS00YTM4LTlhODAtYzc0ZjNjYzMxZGY3OlBUNTMyZjMwMWE2ZDAwN2EyZmRjMDlkNDhiNGYxODRlYjBiNjJlNjk2NzBjMjdlOTkx'
+            'Authorization': `Basic ${auth}`
+          }
+        });
+
+        console.log(`Page ${pageCount} response status:`, response.status);
+
+        if (!response.ok) {
+          throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        const pageBins = data.laml_bins || [];
+        
+        console.log(`Page ${pageCount}: Found ${pageBins.length} bins`);
+        
+        if (pageBins.length > 0) {
+          allBins.push(...pageBins);
+        }
+        
+        nextPageUri = data.next_page_uri || null;
+        
+      } while (nextPageUri && pageCount < maxPages);
+      
+      console.log(`Total bins fetched: ${allBins.length} across ${pageCount} pages`);
+      return allBins;
+    }
+    
+    // Fetch detailed information for each bin
+    async function fetchBinDetails(binUri) {
+      try {
+        const response = await fetch(`https://${spaceUrl}${binUri}`, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': `Basic ${auth}`
           }
         });
         
-        if (detailResponse.ok) {
-          firstBinDetails = await detailResponse.json();
-          console.log('First bin details keys:', Object.keys(firstBinDetails));
-        } else {
-          console.log('Failed to fetch bin details:', detailResponse.status);
+        if (!response.ok) {
+          console.warn(`Failed to fetch details for bin ${binUri}: ${response.status}`);
+          return null;
         }
+        
+        return await response.json();
       } catch (error) {
-        console.log('Error fetching bin details:', error.message);
+        console.warn(`Error fetching bin details for ${binUri}:`, error.message);
+        return null;
       }
     }
     
-    // Return the raw response for inspection
+    // Get all bins
+    const bins = await fetchAllBins();
+    
+    if (bins.length === 0) {
+      return {
+        statusCode: 200,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          success: true,
+          message: 'No bins found',
+          data: [],
+          summary: {
+            totalBins: 0,
+            detailedBins: 0
+          }
+        }, null, 2)
+      };
+    }
+    
+    // Fetch detailed information for each bin (with rate limiting)
+    const detailedBins = [];
+    const batchSize = 3; // Smaller batch size for testing
+    
+    console.log(`Fetching detailed information for ${bins.length} bins...`);
+    
+    for (let i = 0; i < bins.length; i += batchSize) {
+      const batch = bins.slice(i, i + batchSize);
+      const batchPromises = batch.map(bin => fetchBinDetails(bin.uri));
+      const batchResults = await Promise.all(batchPromises);
+      
+      batchResults.forEach((details, index) => {
+        const originalBin = batch[index];
+        if (details) {
+          detailedBins.push(details);
+        } else {
+          // Use basic info if detailed fetch failed
+          detailedBins.push(originalBin);
+        }
+      });
+      
+      // Small delay between batches
+      if (i + batchSize < bins.length) {
+        await new Promise(resolve => setTimeout(resolve, 200));
+      }
+    }
+    
+    console.log(`Successfully fetched details for ${detailedBins.length} bins`);
+    
+    // Format the data for table display
+    const tableData = detailedBins.map((bin, index) => ({
+      index: index + 1,
+      sid: bin.sid || 'N/A',
+      name: bin.friendly_name || bin.name || 'Unnamed',
+      dateCreated: bin.date_created || 'N/A',
+      dateUpdated: bin.date_updated || 'N/A',
+      dateLastAccessed: bin.date_last_accessed || 'Never',
+      accountSid: bin.account_sid || 'N/A',
+      requestUrl: bin.request_url || 'N/A',
+      numRequests: bin.num_requests || 0,
+      apiVersion: bin.api_version || 'N/A',
+      contentsPreview: bin.contents ? 
+        (bin.contents.length > 100 ? bin.contents.substring(0, 100) + '...' : bin.contents) : 
+        'No content',
+      contentsLength: bin.contents ? bin.contents.length : 0,
+      uri: bin.uri || 'N/A'
+    }));
+    
     return {
       statusCode: 200,
       headers: {
@@ -72,17 +189,15 @@ exports.handler = async (event, context) => {
       },
       body: JSON.stringify({
         success: true,
-        responseStatus: response.status,
-        responseHeaders: Object.fromEntries(response.headers.entries()),
-        data: data,
-        firstBinDetails: firstBinDetails,
+        message: `Successfully fetched ${detailedBins.length} bins with detailed information`,
+        tableData: tableData,
+        rawData: detailedBins,
         summary: {
-          totalBins: data.laml_bins ? data.laml_bins.length : 0,
-          hasNextPage: !!data.next_page_uri,
-          nextPageUri: data.next_page_uri,
-          page: data.page,
-          pageSize: data.page_size,
-          firstBinUri: data.laml_bins && data.laml_bins.length > 0 ? data.laml_bins[0].uri : null
+          totalBins: bins.length,
+          detailedBins: detailedBins.length,
+          withContents: detailedBins.filter(bin => bin.contents && bin.contents.trim()).length,
+          averageContentLength: detailedBins.reduce((sum, bin) => sum + (bin.contents ? bin.contents.length : 0), 0) / detailedBins.length,
+          recentlyAccessed: detailedBins.filter(bin => bin.date_last_accessed && bin.date_last_accessed !== 'Never').length
         }
       }, null, 2)
     };
