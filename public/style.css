@@ -199,7 +199,7 @@ input:focus {
 button {
     width: 100%;
     padding: 10px;
-    background: linear-gradient(135deg, var(--sw-pink), var(--sw-deep-sea));
+    background: linear-gradient(135deg, var(--sw-blue), var(--sw-deep-sea));
     color: var(--sw-white);
     border: none;
     border-radius: 8px;
@@ -211,7 +211,7 @@ button {
 }
 
 button:hover {
-    background: linear-gradient(135deg, var(--sw-deep-sea), var(--sw-pink));
+    background: linear-gradient(135deg, var(--sw-deep-sea), var(--sw-blue));
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(4, 78, 244, 0.3);
 }
