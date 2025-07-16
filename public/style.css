@@ -7,7 +7,7 @@
     --sw-deep-sea: #0336ab;
     --sw-white: #ffffff;
     --sw-gray-light: #f8f9fa;
-    --sw-gray-medium: #bec3c9;
+    --sw-gray-medium: #495057;
     --sw-gray-dark: #495057;
 }
 
@@ -31,7 +31,7 @@ body {
 
 h1 {
     text-align: center;
-    color: #55606a;
+    color: #495057;
     margin-bottom: 30px;
     font-weight: 700;
     font-size: 2.5rem;
