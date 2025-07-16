@@ -55,7 +55,7 @@ exports.handler = async (event, context) => {
     
     // Build query parameters for date filtering
     const queryParams = new URLSearchParams();
-    queryParams.append('page_size', '100'); // Use smaller page size for better reliability
+    queryParams.append('page_size', '1000'); // Use smaller page size for better reliability
     
     if (startDate) {
       queryParams.append('created_after', startDate);
