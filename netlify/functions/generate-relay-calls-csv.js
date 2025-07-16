@@ -69,6 +69,7 @@ exports.handler = async (event, context) => {
       const allLogs = [];
       let nextPageToken = null;
       let pageCount = 0;
+      const maxPages = 1000; // Increased safety limit for large datasets
       
       do {
         pageCount++;
@@ -110,14 +111,18 @@ exports.handler = async (event, context) => {
         // Get next page token for pagination
         nextPageToken = data.next_page_token || null;
         
-        // Add a small delay between requests to be respectful to the API  
-        if (nextPageToken) {
+        // Add a small delay between requests to be respectful to the API
+        if (nextPageToken && pageCount < maxPages) {
           await new Promise(resolve => setTimeout(resolve, 100));
         }
         
-      } while (nextPageToken);
+      } while (nextPageToken && pageCount < maxPages);
       
       console.log(`Total RELAY logs fetched: ${allLogs.length} across ${pageCount} pages`);
+      
+      if (pageCount >= maxPages && nextPageToken) {
+        console.warn(`Reached maximum page limit (${maxPages}). There may be more data available.`);
+      }
       
       return allLogs;
     }
