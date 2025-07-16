@@ -1,5 +1,8 @@
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
+// Import the SignalWire compatibility API for project name fetching
+const { RestClient } = require('@signalwire/compatibility-api');
+
 exports.handler = async (event, context) => {
   // Handle CORS preflight requests
   if (event.httpMethod === 'OPTIONS') {
@@ -35,6 +38,20 @@ exports.handler = async (event, context) => {
     
     // Create basic auth header from provided credentials
     const auth = Buffer.from(`${projectId}:${authToken}`).toString('base64');
+    
+    // Fetch project details to get the friendly name using the compatibility API
+    let projectName = 'UnnamedProject';
+    try {
+      const client = new RestClient(projectId, authToken, { signalwireSpaceUrl: spaceUrl });
+      const project = await client.api.accounts(projectId).fetch();
+      projectName = project.friendlyName || 'UnnamedProject';
+      console.log('Fetched project name:', projectName);
+    } catch (error) {
+      console.warn('Failed to fetch project name, using default:', error.message);
+    }
+    
+    // Clean project name for filename (remove invalid characters)
+    const cleanProjectName = projectName.replace(/[^a-zA-Z0-9_-]/g, '_');
     
     // Build query parameters for date filtering
     const queryParams = new URLSearchParams();
@@ -106,15 +123,11 @@ exports.handler = async (event, context) => {
         headers: {
           'Access-Control-Allow-Origin': '*',
           'Content-Type': 'text/csv',
-          'Content-Disposition': 'attachment; filename=RELAY_Calls-NoData.csv'
+          'Content-Disposition': `attachment; filename=RELAY_Calls-${cleanProjectName}.csv`
         },
         body: csvContent
       };
     }
-    
-    // Get project name for filename (use first log's project_id or fallback)
-    const projectName = logs[0]?.project_id || 'UnnamedProject';
-    const cleanProjectName = projectName.replace(/[^a-zA-Z0-9_-]/g, '_');
     
     // Transform logs to CSV format
     const data = logs.map((log) => ({
