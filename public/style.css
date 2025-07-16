@@ -802,3 +802,54 @@ button:active {
         max-height: 500px;
     }
 }
+
+/* Footer styles */
+.footer {
+    margin-top: 40px;
+    padding: 20px 0;
+    border-top: 2px solid var(--sw-breeze);
+    background: linear-gradient(135deg, var(--sw-mist) 0%, var(--sw-breeze) 100%);
+    text-align: center;
+}
+
+.footer-content {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.github-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--sw-deep-sea);
+    text-decoration: none;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 8px;
+    background: var(--sw-white);
+    border: 2px solid var(--sw-breeze);
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(4, 78, 244, 0.1);
+}
+
+.github-link:hover {
+    background: var(--sw-mist);
+    border-color: var(--sw-blue);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(4, 78, 244, 0.2);
+}
+
+.github-link svg {
+    transition: transform 0.2s ease;
+}
+
+.github-link:hover svg {
+    transform: scale(1.1);
+}
+
+.footer-text {
+    margin: 10px 0 0 0;
+    color: var(--sw-gray-medium);
+    font-size: 14px;
+    font-weight: 500;
+}
