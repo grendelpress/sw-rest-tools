@@ -55,7 +55,7 @@ exports.handler = async (event, context) => {
     
     // Build query parameters for date filtering
     const queryParams = new URLSearchParams();
-    queryParams.append('page_size', '1000'); // Maximum page size
+    queryParams.append('page_size', '100'); // Use smaller page size for better reliability
     
     if (startDate) {
       queryParams.append('created_after', startDate);
@@ -67,14 +67,21 @@ exports.handler = async (event, context) => {
     // Fetch all logs with pagination
     async function fetchAllLogs() {
       const allLogs = [];
-      let currentPage = 1;
-      let hasMorePages = true;
-      const maxPages = 50; // Safety limit
+      let nextPageToken = null;
+      let pageCount = 0;
+      const maxPages = 1000; // Increased safety limit for large datasets
       
-      while (hasMorePages && currentPage <= maxPages) {
-        const url = `https://${spaceUrl}/api/voice/logs?${queryParams.toString()}&page=${currentPage}`;
+      do {
+        pageCount++;
+        const currentParams = new URLSearchParams(queryParams);
         
-        console.log(`Fetching RELAY calls page ${currentPage}: ${url}`);
+        if (nextPageToken) {
+          currentParams.append('page_token', nextPageToken);
+        }
+        
+        const url = `https://${spaceUrl}/api/voice/logs?${currentParams.toString()}`;
+        
+        console.log(`Fetching RELAY calls page ${pageCount}...`);
         
         const response = await fetch(url, {
           method: 'GET',
@@ -84,7 +91,7 @@ exports.handler = async (event, context) => {
           }
         });
 
-        console.log(`Page ${currentPage} response status:`, response.status);
+        console.log(`Page ${pageCount} response status:`, response.status);
 
         if (!response.ok) {
           const errorText = await response.text();
@@ -95,18 +102,28 @@ exports.handler = async (event, context) => {
         const data = await response.json();
         const pageLogs = data.data || [];
         
-        console.log(`Page ${currentPage}: Found ${pageLogs.length} logs`);
+        console.log(`Page ${pageCount}: Found ${pageLogs.length} logs`);
         
         if (pageLogs.length > 0) {
           allLogs.push(...pageLogs);
         }
         
-        // Check if there are more pages
-        hasMorePages = data.has_next_page || false;
-        currentPage++;
+        // Get next page token for pagination
+        nextPageToken = data.next_page_token || null;
+        
+        // Add a small delay between requests to be respectful to the API
+        if (nextPageToken && pageCount < maxPages) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        
+      } while (nextPageToken && pageCount < maxPages);
+      
+      console.log(`Total RELAY logs fetched: ${allLogs.length} across ${pageCount} pages`);
+      
+      if (pageCount >= maxPages && nextPageToken) {
+        console.warn(`Reached maximum page limit (${maxPages}). There may be more data available.`);
       }
       
-      console.log(`Total RELAY logs fetched: ${allLogs.length} across ${currentPage - 1} pages`);
       return allLogs;
     }
     
