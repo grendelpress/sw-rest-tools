@@ -118,35 +118,41 @@ exports.handler = async (event, context) => {
     
     // Transform logs to CSV format
     const data = logs.map((log) => ({
-      callId: log.id || '',
+      id: log.id || '',
       from: log.from || '',
       to: log.to || '',
       direction: log.direction || '',
       status: log.status || '',
-      startTime: log.start_time || '',
-      endTime: log.end_time || '',
       duration: log.duration || '',
-      projectId: log.project_id || '',
-      createdAt: log.created_at || '',
-      updatedAt: log.updated_at || ''
+      durationMs: log.duration_ms || '',
+      billingMs: log.billing_ms || '',
+      source: log.source || '',
+      type: log.type || '',
+      url: log.url || '',
+      charge: log.charge || '',
+      chargeDetails: log.charge_details ? JSON.stringify(log.charge_details) : '',
+      createdAt: log.created_at || ''
     }));
 
     // Create CSV content
-    const headers = ['Call ID', 'From', 'To', 'Direction', 'Status', 'Start Time', 'End Time', 'Duration (seconds)', 'Project ID', 'Created At', 'Updated At'];
+    const headers = ['ID', 'From', 'To', 'Direction', 'Status', 'Duration', 'Duration (ms)', 'Billing (ms)', 'Source', 'Type', 'URL', 'Charge', 'Charge Details', 'Created At'];
     const csvContent = [
       headers.join(','),
       ...data.map(row => [
-        `"${row.Id}"`,
+        `"${row.id}"`,
         `"${row.from}"`,
         `"${row.to}"`,
         `"${row.direction}"`,
         `"${row.status}"`,
-        `"${row.startTime}"`,
-        `"${row.endTime}"`,
         `"${row.duration}"`,
-        `"${row.projectId}"`,
-        `"${row.createdAt}"`,
-        `"${row.updatedAt}"`
+        `"${row.durationMs}"`,
+        `"${row.billingMs}"`,
+        `"${row.source}"`,
+        `"${row.type}"`,
+        `"${row.url}"`,
+        `"${row.charge}"`,
+        `"${row.chargeDetails.replace(/"/g, '""')}"`, // Escape quotes in JSON
+        `"${row.createdAt}"`
       ].join(','))
     ].join('\n');
 

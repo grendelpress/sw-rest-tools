@@ -64,10 +64,13 @@ export class Analytics {
         const total = this.data.length;
         const statusBreakdown = this.getFieldBreakdown('Status');
         const directionBreakdown = this.getFieldBreakdown('Direction');
-        const dateRange = this.getDateRange(['Start Time']);
+        const dateRange = this.getDateRange(['Start Time', 'Created At']);
         const totalCost = this.calculateTotalCost();
-        const totalDuration = this.calculateTotalDuration();
-        const avgDuration = this.calculateAverage('Duration (seconds)');
+        
+        // Handle both LaML calls (Duration (seconds)) and RELAY calls (Duration)
+        const durationField = this.data[0] && this.data[0]['Duration (seconds)'] !== undefined ? 'Duration (seconds)' : 'Duration';
+        const totalDuration = this.calculateTotalDuration(durationField);
+        const avgDuration = this.calculateAverage(durationField);
         
         // Top callers/receivers
         const topCallers = this.getTopValues('From', 5);
@@ -266,8 +269,8 @@ export class Analytics {
         return values.reduce((sum, value) => sum + value, 0) / values.length;
     }
     
-    calculateTotalDuration() {
-        const totalSeconds = this.calculateTotal('Duration (seconds)');
+    calculateTotalDuration(durationField = 'Duration (seconds)') {
+        const totalSeconds = this.calculateTotal(durationField);
         return this.formatDuration(totalSeconds);
     }
     
