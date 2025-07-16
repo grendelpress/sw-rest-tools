@@ -1,6 +1,3 @@
-const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
-
-// Import the SignalWire compatibility API for project name fetching
 const { RestClient } = require('@signalwire/compatibility-api');
 
 exports.handler = async (event, context) => {
@@ -30,109 +27,37 @@ exports.handler = async (event, context) => {
   try {
     const { projectId, authToken, spaceUrl, startDate, endDate } = JSON.parse(event.body);
     
-    if (!projectId || !authToken || !spaceUrl) {
-      throw new Error('Missing required credentials: projectId, authToken, and spaceUrl are required');
-    }
+    const client = new RestClient(projectId, authToken, { signalwireSpaceUrl: spaceUrl });
     
-    console.log('Fetching RELAY calls from:', spaceUrl);
-    
-    // Create basic auth header from provided credentials
-    const auth = Buffer.from(`${projectId}:${authToken}`).toString('base64');
-    
-    // Fetch project details to get the friendly name using the compatibility API
-    let projectName = 'UnnamedProject';
-    try {
-      const client = new RestClient(projectId, authToken, { signalwireSpaceUrl: spaceUrl });
-      const project = await client.api.accounts(projectId).fetch();
-      projectName = project.friendlyName || 'UnnamedProject';
-      console.log('Fetched project name:', projectName);
-    } catch (error) {
-      console.warn('Failed to fetch project name, using default:', error.message);
-    }
+    // Fetch project details to get the friendly name
+    const project = await client.api.accounts(projectId).fetch();
+    const projectName = project.friendlyName || 'UnnamedProject';
     
     // Clean project name for filename (remove invalid characters)
     const cleanProjectName = projectName.replace(/[^a-zA-Z0-9_-]/g, '_');
     
-    // Build query parameters for date filtering
-    const queryParams = new URLSearchParams();
-    queryParams.append('page_size', '1000'); // Use smaller page size for better reliability
+    console.log('Fetched project name:', projectName);
     
+    // Build query options for date filtering
+    const queryOptions = {};
     if (startDate) {
-      queryParams.append('created_after', startDate);
+      queryOptions.startTimeAfter = new Date(startDate + 'T00:00:00Z');
     }
     if (endDate) {
-      queryParams.append('created_before', endDate);
+      queryOptions.startTimeBefore = new Date(endDate + 'T23:59:59Z');
     }
     
-    // Fetch all logs with pagination
-    async function fetchAllLogs() {
-      const allLogs = [];
-      let nextPageToken = null;
-      let pageCount = 0;
-      const maxPages = 1000; // Increased safety limit for large datasets
-      
-      do {
-        pageCount++;
-        const currentParams = new URLSearchParams(queryParams);
-        
-        if (nextPageToken) {
-          currentParams.append('page_token', nextPageToken);
-        }
-        
-        const url = `https://${spaceUrl}/api/voice/logs?${currentParams.toString()}`;
-        
-        console.log(`Fetching RELAY calls page ${pageCount}...`);
-        
-        const response = await fetch(url, {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-            'Authorization': `Basic ${auth}`
-          }
-        });
-
-        console.log(`Page ${pageCount} response status:`, response.status);
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error(`API request failed: ${response.status} ${response.statusText}`, errorText);
-          throw new Error(`API request failed: ${response.status} ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        const pageLogs = data.data || [];
-        
-        console.log(`Page ${pageCount}: Found ${pageLogs.length} logs`);
-        
-        if (pageLogs.length > 0) {
-          allLogs.push(...pageLogs);
-        }
-        
-        // Get next page token for pagination
-        nextPageToken = data.next_page_token || null;
-        
-        // Add a small delay between requests to be respectful to the API
-        if (nextPageToken && pageCount < maxPages) {
-          await new Promise(resolve => setTimeout(resolve, 100));
-        }
-        
-      } while (nextPageToken && pageCount < maxPages);
-      
-      console.log(`Total RELAY logs fetched: ${allLogs.length} across ${pageCount} pages`);
-      
-      if (pageCount >= maxPages && nextPageToken) {
-        console.warn(`Reached maximum page limit (${maxPages}). There may be more data available.`);
-      }
-      
-      return allLogs;
-    }
+    console.log('Fetching RELAY calls with RestClient...');
+    console.log('Query options:', queryOptions);
     
-    // Get all logs
-    const logs = await fetchAllLogs();
+    // Use the RestClient to get all calls - this automatically handles pagination
+    const calls = await client.calls.list(queryOptions);
     
-    if (logs.length === 0) {
+    console.log(`Successfully fetched ${calls.length} RELAY calls`);
+    
+    if (calls.length === 0) {
       // Return empty CSV with headers
-      const headers = ['Call ID', 'From', 'To', 'Direction', 'Status', 'Start Time', 'End Time', 'Duration (seconds)', 'Project ID', 'Created At', 'Updated At'];
+      const headers = ['Call SID', 'Parent Call SID', 'From', 'To', 'Start Time', 'End Time', 'Duration (seconds)', 'Status', 'Direction', 'Answered By', 'Forwarded From', 'Caller Name', 'Price', 'Price Unit'];
       const csvContent = headers.join(',');
       
       return {
@@ -146,43 +71,43 @@ exports.handler = async (event, context) => {
       };
     }
     
-    // Transform logs to CSV format
-    const data = logs.map((log) => ({
-      id: log.id || '',
-      from: log.from || '',
-      to: log.to || '',
-      direction: log.direction || '',
-      status: log.status || '',
-      duration: log.duration || '',
-      durationMs: log.duration_ms || '',
-      billingMs: log.billing_ms || '',
-      source: log.source || '',
-      type: log.type || '',
-      url: log.url || '',
-      charge: log.charge || '',
-      chargeDetails: log.charge_details ? JSON.stringify(log.charge_details) : '',
-      createdAt: log.created_at || ''
+    // Transform calls to CSV format (same structure as LaML calls for consistency)
+    const data = calls.map((record) => ({
+      callSid: record.sid || '',
+      parentCallSid: record.parentCallSid || '',
+      from: record.from || '',
+      to: record.to || '',
+      startTime: record.startTime ? record.startTime.toString() : '',
+      endTime: record.endTime ? record.endTime.toString() : '',
+      duration: record.duration || '',
+      status: record.status || '',
+      direction: record.direction || '',
+      answeredBy: record.answeredBy || '',
+      forwardedFrom: record.forwardedFrom || '',
+      callerName: record.callerName || '',
+      price: record.price || '',
+      priceUnit: record.priceUnit || ''
     }));
 
     // Create CSV content
-    const headers = ['ID', 'From', 'To', 'Direction', 'Status', 'Duration', 'Duration (ms)', 'Billing (ms)', 'Source', 'Type', 'URL', 'Charge', 'Charge Details', 'Created At'];
+    const headers = ['Call SID', 'Parent Call SID', 'From', 'To', 'Start Time', 'End Time', 'Duration (seconds)', 'Status', 'Direction', 'Answered By', 'Forwarded From', 'Caller Name', 'Price', 'Price Unit'];
     const csvContent = [
       headers.join(','),
       ...data.map(row => [
-        `"${row.id}"`,
+        `"${row.callSid}"`,
+        `"${row.parentCallSid}"`,
         `"${row.from}"`,
         `"${row.to}"`,
-        `"${row.direction}"`,
-        `"${row.status}"`,
+        `"${row.startTime}"`,
+        `"${row.endTime}"`,
         `"${row.duration}"`,
-        `"${row.durationMs}"`,
-        `"${row.billingMs}"`,
-        `"${row.source}"`,
-        `"${row.type}"`,
-        `"${row.url}"`,
-        `"${row.charge}"`,
-        `"${row.chargeDetails.replace(/"/g, '""')}"`, // Escape quotes in JSON
-        `"${row.createdAt}"`
+        `"${row.status}"`,
+        `"${row.direction}"`,
+        `"${row.answeredBy}"`,
+        `"${row.forwardedFrom}"`,
+        `"${row.callerName}"`,
+        `"${row.price}"`,
+        `"${row.priceUnit}"`
       ].join(','))
     ].join('\n');
 
