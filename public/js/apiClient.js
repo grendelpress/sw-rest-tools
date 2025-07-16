@@ -26,6 +26,7 @@ export class APIClient {
             '/generate-messages-csv': 'Messages',
             '/generate-faxes-csv': 'Faxes',
             '/generate-calls-csv': 'Calls',
+            '/generate-relay-calls-csv': 'RELAY Calls',
             '/generate-recordings-csv': 'Recordings',
             '/generate-bins-csv': 'Bins',
             '/test-bins-api': 'Test Bins API'

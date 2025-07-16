@@ -17,6 +17,7 @@ export class Analytics {
             case 'Messages':
                 return this.generateMessagesSummary();
             case 'Calls':
+            case 'RELAY Calls':
                 return this.generateCallsSummary();
             case 'Faxes':
                 return this.generateFaxesSummary();

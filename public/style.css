@@ -247,6 +247,29 @@ button:hover {
     font-size: 14px;
 }
 
+/* API section headers */
+.api-section-header {
+    grid-column: 1 / -1;
+    margin: 20px 0 10px 0;
+    padding: 15px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 8px;
+    color: white;
+    text-align: center;
+}
+
+.api-section-header h3 {
+    margin: 0 0 5px 0;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.api-section-header p {
+    margin: 0;
+    font-size: 14px;
+    opacity: 0.9;
+}
+
 /* Analytics styles */
 .analytics-section {
     margin-bottom: 20px;
