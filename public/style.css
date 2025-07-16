@@ -1,16 +1,44 @@
+/* SignalWire Brand Colors */
+:root {
+    --sw-blue: #044ef4;
+    --sw-pink: #f72a72;
+    --sw-mist: #f1f8ff;
+    --sw-breeze: #b7d9ff;
+    --sw-deep-sea: #0336ab;
+    --sw-white: #ffffff;
+    --sw-gray-light: #f8f9fa;
+    --sw-gray-medium: #6c757d;
+    --sw-gray-dark: #495057;
+}
+
+body {
+    background: linear-gradient(135deg, var(--sw-mist) 0%, var(--sw-breeze) 100%);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px 0;
+}
+
 .container {
     max-width: 95%;
     margin: 20px auto;
     padding: 20px;
-    background: white;
+    background: var(--sw-white);
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 20px rgba(4, 78, 244, 0.1);
+    border: 1px solid var(--sw-breeze);
 }
 
 h1 {
     text-align: center;
-    color: #333;
+    color: var(--sw-deep-sea);
     margin-bottom: 30px;
+    font-weight: 700;
+    font-size: 2.5rem;
+    background: linear-gradient(135deg, var(--sw-blue), var(--sw-deep-sea));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 /* Credentials form styling for better layout in wide container */
@@ -85,23 +113,23 @@ h1 {
 .preset-btn {
     width: auto;
     padding: 8px 16px;
-    background: #6c757d;
+    background: linear-gradient(135deg, var(--sw-gray-medium), var(--sw-gray-dark));
     font-size: 14px;
     border-radius: 20px;
     transition: all 0.2s ease;
 }
 
 .preset-btn:hover {
-    background: #5a6268;
+    background: linear-gradient(135deg, var(--sw-gray-dark), var(--sw-gray-medium));
     transform: translateY(-1px);
 }
 
 .preset-btn.clear {
-    background: #dc3545;
+    background: linear-gradient(135deg, var(--sw-pink), #e91e63);
 }
 
 .preset-btn.clear:hover {
-    background: #c82333;
+    background: linear-gradient(135deg, #e91e63, var(--sw-pink));
 }
 
 @media (min-width: 768px) {
@@ -122,27 +150,28 @@ h1 {
 }
 
 button.secondary {
-    background: #95a5a6;
+    background: linear-gradient(135deg, var(--sw-gray-medium), var(--sw-gray-dark));
 }
 
 button.secondary:hover {
-    background: #7f8c8d;
+    background: linear-gradient(135deg, var(--sw-gray-dark), var(--sw-gray-medium));
 }
 
 button.primary {
-    background: #3498db;
+    background: linear-gradient(135deg, var(--sw-blue), var(--sw-deep-sea));
 }
 
 button.primary:hover {
-    background: #2980b9;
+    background: linear-gradient(135deg, var(--sw-deep-sea), var(--sw-blue));
 }
 
 button.tertiary {
-    background: #bdc3c7;
+    background: linear-gradient(135deg, var(--sw-breeze), var(--sw-mist));
+    color: var(--sw-deep-sea);
 }
 
 button.tertiary:hover {
-    background: #95a5a6;
+    background: linear-gradient(135deg, var(--sw-mist), var(--sw-breeze));
 }
 
 label {
@@ -154,24 +183,42 @@ label {
 input {
     width: 100%;
     padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+    border: 2px solid var(--sw-breeze);
+    border-radius: 8px;
     font-size: 16px;
+    transition: all 0.3s ease;
+    background: var(--sw-white);
+}
+
+input:focus {
+    outline: none;
+    border-color: var(--sw-blue);
+    box-shadow: 0 0 0 3px rgba(4, 78, 244, 0.1);
 }
 
 button {
     width: 100%;
     padding: 10px;
-    background: #4CAF50;
-    color: white;
+    background: linear-gradient(135deg, var(--sw-blue), var(--sw-deep-sea));
+    color: var(--sw-white);
     border: none;
-    border-radius: 4px;
+    border-radius: 8px;
     font-size: 16px;
+    font-weight: 600;
     cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(4, 78, 244, 0.2);
 }
 
 button:hover {
-    background: #45a049;
+    background: linear-gradient(135deg, var(--sw-deep-sea), var(--sw-blue));
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(4, 78, 244, 0.3);
+}
+
+button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(4, 78, 244, 0.2);
 }
 
 .hidden {
@@ -222,28 +269,31 @@ button:hover {
 .api-link {
     display: block;
     padding: 15px;
-    background: #f8f9fa;
-    border: 1px solid #dee2e6;
-    border-radius: 4px;
+    background: var(--sw-white);
+    border: 2px solid var(--sw-breeze);
+    border-radius: 12px;
     text-decoration: none;
     color: inherit;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(4, 78, 244, 0.05);
 }
 
 .api-link:hover {
-    background: #e9ecef;
-    transform: translateY(-2px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background: var(--sw-mist);
+    border-color: var(--sw-blue);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(4, 78, 244, 0.15);
 }
 
 .api-link h3 {
     margin: 0 0 5px 0;
-    color: #2c3e50;
+    color: var(--sw-deep-sea);
+    font-weight: 700;
 }
 
 .api-link p {
     margin: 0;
-    color: #666;
+    color: var(--sw-gray-dark);
     font-size: 14px;
 }
 
@@ -252,16 +302,18 @@ button:hover {
     grid-column: 1 / -1;
     margin: 20px 0 10px 0;
     padding: 15px 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 8px;
-    color: white;
+    background: linear-gradient(135deg, var(--sw-blue) 0%, var(--sw-deep-sea) 100%);
+    border-radius: 12px;
+    color: var(--sw-white);
     text-align: center;
+    box-shadow: 0 4px 15px rgba(4, 78, 244, 0.2);
 }
 
 .api-section-header h3 {
     margin: 0 0 5px 0;
     font-size: 18px;
     font-weight: 700;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .api-section-header p {
@@ -282,10 +334,10 @@ button:hover {
 .analytics-toggle-btn {
     width: auto !important;
     padding: 10px 20px !important;
-    background: #17a2b8 !important;
-    color: white !important;
+    background: linear-gradient(135deg, var(--sw-pink), #e91e63) !important;
+    color: var(--sw-white) !important;
     border: none !important;
-    border-radius: 6px !important;
+    border-radius: 8px !important;
     font-size: 14px !important;
     font-weight: 600 !important;
     cursor: pointer !important;
@@ -293,24 +345,27 @@ button:hover {
     display: flex !important;
     align-items: center !important;
     gap: 8px !important;
+    box-shadow: 0 2px 8px rgba(247, 42, 114, 0.2) !important;
 }
 
 .analytics-toggle-btn:hover {
-    background: #138496 !important;
+    background: linear-gradient(135deg, #e91e63, var(--sw-pink)) !important;
     transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(247, 42, 114, 0.3) !important;
 }
 
 .analytics-container {
-    background: #f8f9fa;
-    border: 1px solid #dee2e6;
-    border-radius: 8px;
+    background: var(--sw-mist);
+    border: 2px solid var(--sw-breeze);
+    border-radius: 12px;
     padding: 20px;
     margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(4, 78, 244, 0.1);
 }
 
 .analytics-title {
     margin: 0 0 20px 0;
-    color: #2c3e50;
+    color: var(--sw-deep-sea);
     font-size: 20px;
     font-weight: 700;
     text-align: center;
@@ -324,17 +379,18 @@ button:hover {
 }
 
 .analytics-metric {
-    background: white;
+    background: var(--sw-white);
     padding: 15px;
-    border-radius: 8px;
+    border-radius: 12px;
     text-align: center;
-    border: 1px solid #dee2e6;
+    border: 2px solid var(--sw-breeze);
     transition: transform 0.2s ease;
+    box-shadow: 0 2px 8px rgba(4, 78, 244, 0.05);
 }
 
 .analytics-metric:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 6px 20px rgba(4, 78, 244, 0.15);
 }
 
 .metric-value {
@@ -351,11 +407,11 @@ button:hover {
     font-weight: 600;
 }
 
-.metric-primary .metric-value { color: #007bff; }
-.metric-secondary .metric-value { color: #6c757d; }
+.metric-primary .metric-value { color: var(--sw-blue); }
+.metric-secondary .metric-value { color: var(--sw-gray-medium); }
 .metric-cost .metric-value { color: #28a745; }
 .metric-duration .metric-value { color: #fd7e14; }
-.metric-info .metric-value { color: #17a2b8; }
+.metric-info .metric-value { color: var(--sw-pink); }
 
 .analytics-grid {
     display: grid;
@@ -365,10 +421,11 @@ button:hover {
 
 .analytics-breakdown,
 .analytics-top-list {
-    background: white;
+    background: var(--sw-white);
     padding: 20px;
-    border-radius: 8px;
-    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    border: 2px solid var(--sw-breeze);
+    box-shadow: 0 2px 8px rgba(4, 78, 244, 0.05);
 }
 
 .analytics-breakdown h4,
@@ -409,7 +466,7 @@ button:hover {
 
 .breakdown-bar-fill {
     height: 100%;
-    background: linear-gradient(90deg, #007bff, #0056b3);
+    background: linear-gradient(90deg, var(--sw-blue), var(--sw-deep-sea));
     border-radius: 3px;
     transition: width 0.3s ease;
 }
@@ -427,7 +484,7 @@ button:hover {
 
 .top-list-rank {
     font-weight: 700;
-    color: #007bff;
+    color: var(--sw-blue);
     width: 25px;
     flex-shrink: 0;
 }
@@ -464,10 +521,12 @@ button:hover {
 }
 
 .data-header {
-    background: #f8f9fa;
+    background: var(--sw-mist);
     padding: 20px;
-    border-radius: 8px;
+    border-radius: 12px;
     margin-bottom: 20px;
+    border: 2px solid var(--sw-breeze);
+    box-shadow: 0 2px 8px rgba(4, 78, 244, 0.05);
 }
 
 .header-top {
@@ -479,23 +538,27 @@ button:hover {
 
 .header-top h2 {
     margin: 0 0 15px 0;
-    color: #2c3e50;
+    color: var(--sw-deep-sea);
+    font-weight: 700;
 }
 
 .back-button {
     width: auto !important;
     padding: 8px 16px !important;
-    background: #6c757d !important;
-    color: white !important;
+    background: linear-gradient(135deg, var(--sw-gray-medium), var(--sw-gray-dark)) !important;
+    color: var(--sw-white) !important;
     border: none !important;
-    border-radius: 4px !important;
+    border-radius: 8px !important;
     font-size: 14px !important;
     cursor: pointer !important;
     transition: background-color 0.2s ease !important;
+    box-shadow: 0 2px 8px rgba(108, 117, 125, 0.2) !important;
 }
 
 .back-button:hover {
-    background: #5a6268 !important;
+    background: linear-gradient(135deg, var(--sw-gray-dark), var(--sw-gray-medium)) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3) !important;
 }
 
 /* Combined controls styling */
