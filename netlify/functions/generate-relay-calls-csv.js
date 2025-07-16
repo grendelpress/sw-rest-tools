@@ -55,6 +55,7 @@ exports.handler = async (event, context) => {
     
     // Build query parameters for date filtering
     const queryParams = new URLSearchParams();
+    queryParams.append('page_size', '1000'); // Use smaller page size for better reliability
     
     if (startDate) {
       queryParams.append('created_after', startDate);
@@ -80,7 +81,6 @@ exports.handler = async (event, context) => {
         const url = `https://${spaceUrl}/api/voice/logs?${currentParams.toString()}`;
         
         console.log(`Fetching RELAY calls page ${pageCount}...`);
-        console.log(`URL: ${url}`);
         
         const response = await fetch(url, {
           method: 'GET',
@@ -101,7 +101,7 @@ exports.handler = async (event, context) => {
         const data = await response.json();
         const pageLogs = data.data || [];
         
-        console.log(`Page ${pageCount}: Found ${pageLogs.length} logs, Total so far: ${allLogs.length + pageLogs.length}`);
+        console.log(`Page ${pageCount}: Found ${pageLogs.length} logs`);
         
         if (pageLogs.length > 0) {
           allLogs.push(...pageLogs);
@@ -109,16 +109,15 @@ exports.handler = async (event, context) => {
         
         // Get next page token for pagination
         nextPageToken = data.next_page_token || null;
-        console.log(`Next page token: ${nextPageToken ? 'EXISTS' : 'NULL'}`);
         
         // Add a small delay between requests to be respectful to the API  
         if (nextPageToken) {
-          await new Promise(resolve => setTimeout(resolve, 200)); // Slightly longer delay
+          await new Promise(resolve => setTimeout(resolve, 100));
         }
         
       } while (nextPageToken);
       
-      console.log(`FINAL: Total RELAY logs fetched: ${allLogs.length} across ${pageCount} pages`);
+      console.log(`Total RELAY logs fetched: ${allLogs.length} across ${pageCount} pages`);
       
       return allLogs;
     }
