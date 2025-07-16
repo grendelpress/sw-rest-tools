@@ -162,7 +162,7 @@ button.primary {
 }
 
 button.primary:hover {
-    background: linear-gradient(135deg, var(--sw-deep-sea), var(--sw-pink));
+    background: linear-gradient(135deg, var(--sw-deep-sea), var(--sw-blue));
 }
 
 button.tertiary {
