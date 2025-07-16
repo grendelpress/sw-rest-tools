@@ -118,7 +118,7 @@ exports.handler = async (event, context) => {
     
     // Transform logs to CSV format
     const data = logs.map((log) => ({
-      callId: log.call_id || '',
+      callId: log.id || '',
       from: log.from || '',
       to: log.to || '',
       direction: log.direction || '',
@@ -136,7 +136,7 @@ exports.handler = async (event, context) => {
     const csvContent = [
       headers.join(','),
       ...data.map(row => [
-        `"${row.callId}"`,
+        `"${row.Id}"`,
         `"${row.from}"`,
         `"${row.to}"`,
         `"${row.direction}"`,
