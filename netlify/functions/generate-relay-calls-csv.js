@@ -1,5 +1,8 @@
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
+// Import the SignalWire compatibility API for project name fetching
+const { RestClient } = require('@signalwire/compatibility-api');
+
 exports.handler = async (event, context) => {
   // Handle CORS preflight requests
   if (event.httpMethod === 'OPTIONS') {
@@ -27,60 +30,58 @@ exports.handler = async (event, context) => {
   try {
     const { projectId, authToken, spaceUrl, startDate, endDate } = JSON.parse(event.body);
     
-    console.log('Fetching RELAY calls with direct API approach...');
-    console.log('Project ID:', projectId);
-    console.log('Space URL:', spaceUrl);
-    console.log('Date range:', startDate, 'to', endDate);
+    if (!projectId || !authToken || !spaceUrl) {
+      throw new Error('Missing required credentials: projectId, authToken, and spaceUrl are required');
+    }
     
-    // Create basic auth header
+    console.log('Fetching RELAY calls from:', spaceUrl);
+    
+    // Create basic auth header from provided credentials
     const auth = Buffer.from(`${projectId}:${authToken}`).toString('base64');
     
-    // Fetch project details to get the friendly name
-    const projectResponse = await fetch(`https://${spaceUrl}/api/laml/2010-04-01/Accounts/${projectId}`, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-        'Authorization': `Basic ${auth}`
-      }
-    });
-    
+    // Fetch project details to get the friendly name using the compatibility API
     let projectName = 'UnnamedProject';
-    if (projectResponse.ok) {
-      const projectData = await projectResponse.json();
-      projectName = projectData.friendly_name || 'UnnamedProject';
+    try {
+      const client = new RestClient(projectId, authToken, { signalwireSpaceUrl: spaceUrl });
+      const project = await client.api.accounts(projectId).fetch();
+      projectName = project.friendlyName || 'UnnamedProject';
+      console.log('Fetched project name:', projectName);
+    } catch (error) {
+      console.warn('Failed to fetch project name, using default:', error.message);
     }
     
     // Clean project name for filename (remove invalid characters)
     const cleanProjectName = projectName.replace(/[^a-zA-Z0-9_-]/g, '_');
     
-    // Fetch all RELAY calls with pagination
+    // Build query parameters for date filtering
+    const queryParams = new URLSearchParams();
+    queryParams.append('page_size', '1000'); // Use smaller page size for better reliability
+    
+    if (startDate) {
+      queryParams.append('created_after', startDate);
+    }
+    if (endDate) {
+      queryParams.append('created_before', endDate);
+    }
+    
+    // Fetch all logs with pagination
     async function fetchAllLogs() {
       const allLogs = [];
       let nextPageToken = null;
       let pageCount = 0;
+      const maxPages = 1000; // Increased safety limit for large datasets
       
       do {
         pageCount++;
-        console.log(`Fetching RELAY calls page ${pageCount}...`);
-        
-        // Build query parameters
-        const queryParams = new URLSearchParams();
-        queryParams.append('page_size', '1000'); // Use larger page size for efficiency
+        const currentParams = new URLSearchParams(queryParams);
         
         if (nextPageToken) {
-          queryParams.append('next_page_token', nextPageToken);
+          currentParams.append('page_token', nextPageToken);
         }
         
-        // Add date filters if provided
-        if (startDate) {
-          queryParams.append('start_time_after', startDate + 'T00:00:00Z');
-        }
-        if (endDate) {
-          queryParams.append('start_time_before', endDate + 'T23:59:59Z');
-        }
+        const url = `https://${spaceUrl}/api/voice/logs?${currentParams.toString()}`;
         
-        const url = `https://${spaceUrl}/api/voice/logs?${queryParams.toString()}`;
-        console.log(`Page ${pageCount} URL:`, url);
+        console.log(`Fetching RELAY calls page ${pageCount}...`);
         
         const response = await fetch(url, {
           method: 'GET',
@@ -94,41 +95,44 @@ exports.handler = async (event, context) => {
 
         if (!response.ok) {
           const errorText = await response.text();
-          console.error(`API request failed on page ${pageCount}:`, response.status, errorText);
+          console.error(`API request failed: ${response.status} ${response.statusText}`, errorText);
           throw new Error(`API request failed: ${response.status} ${response.statusText}`);
         }
 
         const data = await response.json();
         const pageLogs = data.data || [];
         
-        console.log(`Page ${pageCount}: Found ${pageLogs.length} RELAY calls`);
+        console.log(`Page ${pageCount}: Found ${pageLogs.length} logs`);
         
         if (pageLogs.length > 0) {
           allLogs.push(...pageLogs);
         }
         
+        // Get next page token for pagination
         nextPageToken = data.next_page_token || null;
-        console.log(`Page ${pageCount}: Next page token:`, nextPageToken ? 'Present' : 'None');
         
         // Add a small delay between requests to be respectful to the API
-        if (nextPageToken) {
+        if (nextPageToken && pageCount < maxPages) {
           await new Promise(resolve => setTimeout(resolve, 100));
         }
         
-      } while (nextPageToken); // Continue until no more pages
+      } while (nextPageToken && pageCount < maxPages);
       
-      console.log(`Total RELAY calls fetched: ${allLogs.length} across ${pageCount} pages`);
+      console.log(`Total RELAY logs fetched: ${allLogs.length} across ${pageCount} pages`);
+      
+      if (pageCount >= maxPages && nextPageToken) {
+        console.warn(`Reached maximum page limit (${maxPages}). There may be more data available.`);
+      }
+      
       return allLogs;
     }
     
-    // Get all RELAY calls
-    const calls = await fetchAllLogs();
+    // Get all logs
+    const logs = await fetchAllLogs();
     
-    console.log(`Successfully fetched ${calls.length} RELAY calls`);
-    
-    if (calls.length === 0) {
+    if (logs.length === 0) {
       // Return empty CSV with headers
-      const headers = ['Call SID', 'Parent Call SID', 'From', 'To', 'Start Time', 'End Time', 'Duration (seconds)', 'Status', 'Direction', 'Answered By', 'Forwarded From', 'Caller Name', 'Price', 'Price Unit'];
+      const headers = ['Call ID', 'From', 'To', 'Direction', 'Status', 'Start Time', 'End Time', 'Duration (seconds)', 'Project ID', 'Created At', 'Updated At'];
       const csvContent = headers.join(',');
       
       return {
@@ -142,43 +146,43 @@ exports.handler = async (event, context) => {
       };
     }
     
-    // Transform RELAY calls to CSV format
-    const data = calls.map((record) => ({
-      callSid: record.call_id || '',
-      parentCallSid: record.parent_call_id || '',
-      from: record.from || '',
-      to: record.to || '',
-      startTime: record.start_time || '',
-      endTime: record.end_time || '',
-      duration: record.duration || '',
-      status: record.call_state || '',
-      direction: record.direction || '',
-      answeredBy: record.answered_by || '',
-      forwardedFrom: record.forwarded_from || '',
-      callerName: record.caller_name || '',
-      price: record.price || '',
-      priceUnit: record.price_unit || ''
+    // Transform logs to CSV format
+    const data = logs.map((log) => ({
+      id: log.id || '',
+      from: log.from || '',
+      to: log.to || '',
+      direction: log.direction || '',
+      status: log.status || '',
+      duration: log.duration || '',
+      durationMs: log.duration_ms || '',
+      billingMs: log.billing_ms || '',
+      source: log.source || '',
+      type: log.type || '',
+      url: log.url || '',
+      charge: log.charge || '',
+      chargeDetails: log.charge_details ? JSON.stringify(log.charge_details) : '',
+      createdAt: log.created_at || ''
     }));
 
     // Create CSV content
-    const headers = ['Call SID', 'Parent Call SID', 'From', 'To', 'Start Time', 'End Time', 'Duration (seconds)', 'Status', 'Direction', 'Answered By', 'Forwarded From', 'Caller Name', 'Price', 'Price Unit'];
+    const headers = ['ID', 'From', 'To', 'Direction', 'Status', 'Duration', 'Duration (ms)', 'Billing (ms)', 'Source', 'Type', 'URL', 'Charge', 'Charge Details', 'Created At'];
     const csvContent = [
       headers.join(','),
       ...data.map(row => [
-        `"${row.callSid}"`,
-        `"${row.parentCallSid}"`,
+        `"${row.id}"`,
         `"${row.from}"`,
         `"${row.to}"`,
-        `"${row.startTime}"`,
-        `"${row.endTime}"`,
-        `"${row.duration}"`,
-        `"${row.status}"`,
         `"${row.direction}"`,
-        `"${row.answeredBy}"`,
-        `"${row.forwardedFrom}"`,
-        `"${row.callerName}"`,
-        `"${row.price}"`,
-        `"${row.priceUnit}"`
+        `"${row.status}"`,
+        `"${row.duration}"`,
+        `"${row.durationMs}"`,
+        `"${row.billingMs}"`,
+        `"${row.source}"`,
+        `"${row.type}"`,
+        `"${row.url}"`,
+        `"${row.charge}"`,
+        `"${row.chargeDetails.replace(/"/g, '""')}"`, // Escape quotes in JSON
+        `"${row.createdAt}"`
       ].join(','))
     ].join('\n');
 
