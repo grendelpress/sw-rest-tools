@@ -53,37 +53,32 @@ exports.handler = async (event, context) => {
     // Clean project name for filename (remove invalid characters)
     const cleanProjectName = projectName.replace(/[^a-zA-Z0-9_-]/g, '_');
     
-    // Build query parameters for date filtering
-    const queryParams = new URLSearchParams();
-    queryParams.append('page_size', '1000'); // Use smaller page size for better reliability
+    // Build initial query parameters for date filtering
+    const initialParams = new URLSearchParams();
+    initialParams.append('page_size', '1000'); // Use 1000 as in Python example
+    initialParams.append('page', '1'); // Start with page 1
     
     if (startDate) {
-      queryParams.append('created_after', startDate);
+      initialParams.append('created_after', startDate);
     }
     if (endDate) {
-      queryParams.append('created_before', endDate);
+      initialParams.append('created_before', endDate);
     }
     
-    // Fetch all logs with pagination
+    // Fetch all logs with pagination using the Python approach
     async function fetchAllLogs() {
       const allLogs = [];
-      let nextPageToken = null;
+      let currentUrl = `https://${spaceUrl}/api/voice/logs?${initialParams.toString()}`;
+      let hasMorePages = true;
       let pageCount = 0;
-      const maxPages = 1000; // Increased safety limit for large datasets
+      const maxPages = 1000; // Safety limit
       
-      do {
+      while (hasMorePages && pageCount < maxPages) {
         pageCount++;
-        const currentParams = new URLSearchParams(queryParams);
         
-        if (nextPageToken) {
-          currentParams.append('page_token', nextPageToken);
-        }
+        console.log(`Fetching RELAY calls page ${pageCount}: ${currentUrl}`);
         
-        const url = `https://${spaceUrl}/api/voice/logs?${currentParams.toString()}`;
-        
-        console.log(`Fetching RELAY calls page ${pageCount}...`);
-        
-        const response = await fetch(url, {
+        const response = await fetch(currentUrl, {
           method: 'GET',
           headers: {
             'Accept': 'application/json',
@@ -99,8 +94,8 @@ exports.handler = async (event, context) => {
           throw new Error(`API request failed: ${response.status} ${response.statusText}`);
         }
 
-        const data = await response.json();
-        const pageLogs = data.data || [];
+        const responseData = await response.json();
+        const pageLogs = responseData.data || [];
         
         console.log(`Page ${pageCount}: Found ${pageLogs.length} logs`);
         
@@ -108,19 +103,25 @@ exports.handler = async (event, context) => {
           allLogs.push(...pageLogs);
         }
         
-        // Get next page token for pagination
-        nextPageToken = data.next_page_token || null;
-        
-        // Add a small delay between requests to be respectful to the API
-        if (nextPageToken && pageCount < maxPages) {
-          await new Promise(resolve => setTimeout(resolve, 100));
+        // Check if there are more pages using the links.next approach from Python
+        const links = responseData.links || {};
+        if (links.next) {
+          currentUrl = links.next;
+          console.log(`Next page URL: ${currentUrl}`);
+        } else {
+          hasMorePages = false;
+          console.log('No more pages available');
         }
         
-      } while (nextPageToken && pageCount < maxPages);
+        // Add a small delay between requests to be respectful to the API
+        if (hasMorePages && pageCount < maxPages) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+      }
       
       console.log(`Total RELAY logs fetched: ${allLogs.length} across ${pageCount} pages`);
       
-      if (pageCount >= maxPages && nextPageToken) {
+      if (pageCount >= maxPages && hasMorePages) {
         console.warn(`Reached maximum page limit (${maxPages}). There may be more data available.`);
       }
       
@@ -132,7 +133,7 @@ exports.handler = async (event, context) => {
     
     if (logs.length === 0) {
       // Return empty CSV with headers
-      const headers = ['Call ID', 'From', 'To', 'Direction', 'Status', 'Start Time', 'End Time', 'Duration (seconds)', 'Project ID', 'Created At', 'Updated At'];
+      const headers = ['ID', 'From', 'To', 'Direction', 'Status', 'Duration', 'Duration (ms)', 'Billing (ms)', 'Source', 'Type', 'URL', 'Charge', 'Charge Details', 'Created At'];
       const csvContent = headers.join(',');
       
       return {
