@@ -31,8 +31,8 @@ export class DataFilter {
     
     filterByDateRange(data, startDate, endDate) {
         return data.filter(row => {
-            // Find date fields in the row (common date field names)
-            const dateFields = ['Start Time', 'Date Sent', 'Date Created', 'Date Updated'];
+            // Find date fields in the row (including RELAY-specific fields)
+            const dateFields = ['Start Time', 'Date Sent', 'Date Created', 'Date Updated', 'Created At'];
             let rowDate = null;
             
             for (const field of dateFields) {

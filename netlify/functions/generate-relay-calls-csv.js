@@ -59,10 +59,10 @@ exports.handler = async (event, context) => {
     initialParams.append('page', '1'); // Start with page 1
     
     if (startDate) {
-      initialParams.append('created_after', startDate);
+      initialParams.append('created_after', startDate + 'T00:00:00Z');
     }
     if (endDate) {
-      initialParams.append('created_before', endDate);
+      initialParams.append('created_before', endDate + 'T23:59:59Z');
     }
     
     // Fetch all logs with pagination using the Python approach
