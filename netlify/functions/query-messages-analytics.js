@@ -1,4 +1,4 @@
-const { RestClient } = require('@signalwire/compatibility-api');
+const fetch = require('node-fetch');
 
 exports.handler = async (event, context) => {
   // Handle CORS preflight requests
@@ -55,76 +55,60 @@ exports.handler = async (event, context) => {
       };
     }
 
-    const client = new RestClient(projectId, authToken, { signalwireSpaceUrl: spaceUrl });
-
-    // Build query options for filtering
-    const queryOptions = {};
-
-    // Use dateSent for date filtering as per SignalWire API
-    if (startDate && endDate) {
-      // For date range, we need to use both dateSentAfter and dateSentBefore
-      queryOptions.dateSentAfter = new Date(startDate + 'T00:00:00Z');
-      queryOptions.dateSentBefore = new Date(endDate + 'T23:59:59Z');
-    } else if (startDate) {
-      queryOptions.dateSentAfter = new Date(startDate + 'T00:00:00Z');
-    } else if (endDate) {
-      queryOptions.dateSentBefore = new Date(endDate + 'T23:59:59Z');
-    }
+    // Build URL with query parameters
+    const baseUrl = `https://${spaceUrl}/api/laml/2010-04-01/Accounts/${projectId}/Messages.json`;
+    const queryParams = new URLSearchParams();
 
     if (to) {
-      queryOptions.to = to;
+      queryParams.append('To', to);
     }
     if (from) {
-      queryOptions.from = from;
+      queryParams.append('From', from);
+    }
+    if (startDate) {
+      queryParams.append('DateSent>', startDate);
+    }
+    if (endDate) {
+      queryParams.append('DateSent<', endDate);
     }
 
-    console.log('Query options:', JSON.stringify(queryOptions, null, 2));
+    const url = queryParams.toString() ? `${baseUrl}?${queryParams.toString()}` : baseUrl;
+    console.log('Request URL:', url);
 
-    // Fetch all messages matching the criteria
-    const messages = await client.messages.list(queryOptions);
+    // Make direct HTTP request with Basic Auth
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Authorization': 'Basic ' + Buffer.from(`${projectId}:${authToken}`).toString('base64'),
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('SignalWire API error:', errorText);
+      throw new Error(`SignalWire API error: ${response.status} ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    const messages = result.messages || [];
 
     console.log('Messages received from API:', messages.length);
-
-    // If no messages found with filters, log a sample query without filters for debugging
-    if (messages.length === 0 && (to || from || startDate || endDate)) {
-      console.log('No messages found with filters. Testing query without filters...');
-      const allMessages = await client.messages.list({ pageSize: 5 });
-      console.log('Sample messages without filters:', allMessages.length);
-      if (allMessages.length > 0) {
-        console.log('Sample message structure:', JSON.stringify({
-          to: allMessages[0].to,
-          from: allMessages[0].from,
-          dateSent: allMessages[0].dateSent,
-          direction: allMessages[0].direction
-        }, null, 2));
-
-        // Check if the 'to' filter matches any messages
-        const matchingTo = allMessages.find(m => m.to === to);
-        const matchingFrom = allMessages.find(m => m.from === to);
-        console.log('Found message with matching "to":', !!matchingTo);
-        console.log('Found message with "from" matching our "to" filter:', !!matchingFrom);
-
-        if (!matchingTo && !matchingFrom && allMessages.length > 0) {
-          console.log('All "to" numbers in sample:', allMessages.map(m => m.to));
-          console.log('All "from" numbers in sample:', allMessages.map(m => m.from));
-        }
-      }
-    }
 
     // Format message data for analytics
     const data = messages.map((record) => ({
       sid: record.sid || '',
       from: record.from || '',
       to: record.to || '',
-      dateSent: record.dateSent ? record.dateSent.toISOString() : '',
+      dateSent: record.date_sent || record.dateSent || '',
       status: record.status || '',
       direction: record.direction || '',
-      errorCode: record.errorCode || null,
-      errorMessage: record.errorMessage || null,
+      errorCode: record.error_code || record.errorCode || null,
+      errorMessage: record.error_message || record.errorMessage || null,
       body: record.body || '',
-      numSegments: record.numSegments || 0,
+      numSegments: record.num_segments || record.numSegments || 0,
       price: record.price || 0,
-      priceUnit: record.priceUnit || 'USD'
+      priceUnit: record.price_unit || record.priceUnit || 'USD'
     }));
 
     return {
