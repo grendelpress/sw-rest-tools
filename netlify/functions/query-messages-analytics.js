@@ -91,11 +91,23 @@ exports.handler = async (event, context) => {
       const allMessages = await client.messages.list({ limit: 5 });
       console.log('Sample messages without filters:', allMessages.length);
       if (allMessages.length > 0) {
-        console.log('Sample message structure:', {
+        console.log('Sample message structure:', JSON.stringify({
           to: allMessages[0].to,
           from: allMessages[0].from,
-          dateSent: allMessages[0].dateSent
-        });
+          dateSent: allMessages[0].dateSent,
+          direction: allMessages[0].direction
+        }, null, 2));
+
+        // Check if the 'to' filter matches any messages
+        const matchingTo = allMessages.find(m => m.to === to);
+        const matchingFrom = allMessages.find(m => m.from === to);
+        console.log('Found message with matching "to":', !!matchingTo);
+        console.log('Found message with "from" matching our "to" filter:', !!matchingFrom);
+
+        if (!matchingTo && !matchingFrom && allMessages.length > 0) {
+          console.log('All "to" numbers in sample:', allMessages.map(m => m.to));
+          console.log('All "from" numbers in sample:', allMessages.map(m => m.from));
+        }
       }
     }
 
