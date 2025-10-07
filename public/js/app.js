@@ -8,6 +8,9 @@ import { APIClient } from './apiClient.js';
 import { UIManager } from './uiManager.js';
 import { Analytics } from './analytics.js';
 import { AnalyticsRenderer } from './analyticsRenderer.js';
+import { PhoneValidator } from './phoneValidator.js';
+import { MessageAnalytics } from './messageAnalytics.js';
+import { MessagingAnalyticsDashboard } from './messagingAnalyticsDashboard.js';
 
 class SignalWireApp {
     constructor() {
@@ -16,10 +19,11 @@ class SignalWireApp {
         this.uiManager = new UIManager();
         this.analytics = new Analytics();
         this.analyticsRenderer = new AnalyticsRenderer(document.getElementById('analyticsContainer'));
+        this.messagingAnalyticsDashboard = new MessagingAnalyticsDashboard('analyticsResultsContainer');
         this.currentDataType = '';
         this.currentProjectName = '';
         this.csvDataForDownload = null; // Store CSV data for special endpoints
-        
+
         this.initializeElements();
         this.initializeDataTable();
         this.bindEvents();
@@ -51,7 +55,20 @@ class SignalWireApp {
         this.downloadOriginalBtn = document.getElementById('downloadOriginalBtn');
         this.backBtn = document.getElementById('backBtn');
         this.toggleAnalyticsBtn = document.getElementById('toggleAnalyticsBtn');
-        
+
+        // Messaging Analytics elements
+        this.messagingAnalyticsView = document.getElementById('messagingAnalyticsView');
+        this.analyticsQueryForm = document.getElementById('analyticsQueryForm');
+        this.analyticsToNumber = document.getElementById('analyticsToNumber');
+        this.analyticsFromNumber = document.getElementById('analyticsFromNumber');
+        this.analyticsStartDate = document.getElementById('analyticsStartDate');
+        this.analyticsEndDate = document.getElementById('analyticsEndDate');
+        this.toNumberError = document.getElementById('toNumberError');
+        this.fromNumberError = document.getElementById('fromNumberError');
+        this.backFromAnalyticsBtn = document.getElementById('backFromAnalyticsBtn');
+        this.clearAnalyticsFiltersBtn = document.getElementById('clearAnalyticsFiltersBtn');
+        this.analyticsResultsContainer = document.getElementById('analyticsResultsContainer');
+
         // API links
         this.apiLinks = document.querySelectorAll('.api-link');
     }
@@ -93,12 +110,19 @@ class SignalWireApp {
         this.downloadOriginalBtn.addEventListener('click', () => this.handleDownloadOriginal());
         this.backBtn.addEventListener('click', () => this.handleBack());
         this.toggleAnalyticsBtn.addEventListener('click', () => this.handleToggleAnalytics());
-        
+
+        // Messaging Analytics events
+        this.analyticsQueryForm.addEventListener('submit', (e) => this.handleAnalyticsQuery(e));
+        this.backFromAnalyticsBtn.addEventListener('click', () => this.handleBackFromAnalytics());
+        this.clearAnalyticsFiltersBtn.addEventListener('click', () => this.handleClearAnalyticsFilters());
+        this.analyticsToNumber.addEventListener('input', () => this.validatePhoneNumber(this.analyticsToNumber, this.toNumberError));
+        this.analyticsFromNumber.addEventListener('input', () => this.validatePhoneNumber(this.analyticsFromNumber, this.fromNumberError));
+
         // API link events
         this.apiLinks.forEach(link => {
             link.addEventListener('click', (e) => this.handleApiLinkClick(e));
         });
-        
+
         // Date preset events
         this.bindDatePresetEvents();
     }
@@ -107,9 +131,13 @@ class SignalWireApp {
         document.querySelectorAll('.preset-btn[data-days]').forEach(btn => {
             btn.addEventListener('click', () => {
                 const days = parseInt(btn.dataset.days);
-                
+
+                // Check if we're in the analytics form
+                if (btn.closest('#messagingAnalyticsView')) {
+                    DateUtils.setDateRange(this.analyticsStartDate, this.analyticsEndDate, days);
+                }
                 // Check if we're in the main form or filter section
-                if (btn.closest('#dateRangeSection')) {
+                else if (btn.closest('#dateRangeSection')) {
                     DateUtils.setDateRange(this.startDateInput, this.endDateInput, days);
                 } else {
                     DateUtils.setDateRange(this.filterStartDateInput, this.filterEndDateInput, days);
@@ -227,36 +255,44 @@ class SignalWireApp {
     
     async handleApiLinkClick(e) {
         e.preventDefault();
-        
+
         if (!this.credentials) {
             alert('Please save your credentials first');
             return;
         }
-        
+
         const link = e.currentTarget;
+        const analyticsType = link.dataset.type;
+
+        // Check if this is the messaging analytics link
+        if (analyticsType === 'messaging-analytics') {
+            this.showMessagingAnalytics();
+            return;
+        }
+
         const endpoint = link.dataset.endpoint;
-        
+
         // Show date range section when API is selected
         this.uiManager.showDateRangeSection();
-        
+
         // Validate date range
         if (!DateUtils.validateDateRange(this.startDateInput.value, this.endDateInput.value)) {
             alert('Start date must be before or equal to end date');
             return;
         }
-        
+
         // Get date range parameters
         const dateParams = DateUtils.getDateRangeParams(this.startDateInput, this.endDateInput);
-        
+
         this.uiManager.showStatus();
         this.currentDataType = APIClient.getDataTypeTitle(endpoint);
-        
+
         try {
             const response = await APIClient.makeRequest(endpoint, this.credentials, dateParams);
-            
+
             // Process the response based on endpoint type
             await this.processApiResponse(endpoint, response);
-            
+
         } catch (error) {
             alert('Error: ' + error.message);
             this.uiManager.hideStatus();
@@ -362,6 +398,115 @@ class SignalWireApp {
         }
         
         this.uiManager.hideStatus();
+    }
+
+    showMessagingAnalytics() {
+        document.getElementById('apiLinks').classList.add('hidden');
+        document.getElementById('dateRangeSection').classList.add('hidden');
+        this.messagingAnalyticsView.classList.remove('hidden');
+        this.analyticsResultsContainer.classList.add('hidden');
+    }
+
+    handleBackFromAnalytics() {
+        this.messagingAnalyticsView.classList.add('hidden');
+        this.analyticsResultsContainer.classList.add('hidden');
+        document.getElementById('apiLinks').classList.remove('hidden');
+        this.analyticsQueryForm.reset();
+        this.toNumberError.classList.add('hidden');
+        this.fromNumberError.classList.add('hidden');
+    }
+
+    handleClearAnalyticsFilters() {
+        this.analyticsToNumber.value = '';
+        this.analyticsFromNumber.value = '';
+        DateUtils.clearDateRange(this.analyticsStartDate, this.analyticsEndDate);
+        this.toNumberError.classList.add('hidden');
+        this.fromNumberError.classList.add('hidden');
+    }
+
+    validatePhoneNumber(inputElement, errorElement) {
+        const value = inputElement.value.trim();
+        const validationMessage = PhoneValidator.getValidationMessage(value);
+
+        if (validationMessage) {
+            errorElement.textContent = validationMessage;
+            errorElement.classList.remove('hidden');
+            return false;
+        } else {
+            errorElement.classList.add('hidden');
+            return true;
+        }
+    }
+
+    async handleAnalyticsQuery(e) {
+        e.preventDefault();
+
+        if (!this.credentials) {
+            alert('Please save your credentials first');
+            return;
+        }
+
+        const toNumber = this.analyticsToNumber.value.trim();
+        const fromNumber = this.analyticsFromNumber.value.trim();
+        const startDate = this.analyticsStartDate.value;
+        const endDate = this.analyticsEndDate.value;
+
+        const isToValid = this.validatePhoneNumber(this.analyticsToNumber, this.toNumberError);
+        const isFromValid = this.validatePhoneNumber(this.analyticsFromNumber, this.fromNumberError);
+
+        if (!isToValid || !isFromValid) {
+            alert('Please correct phone number format errors');
+            return;
+        }
+
+        if (startDate && endDate && !DateUtils.validateDateRange(startDate, endDate)) {
+            alert('Start date must be before or equal to end date');
+            return;
+        }
+
+        this.uiManager.showStatus();
+
+        try {
+            const requestBody = {
+                ...this.credentials,
+                to: toNumber || undefined,
+                from: fromNumber || undefined,
+                startDate: startDate || undefined,
+                endDate: endDate || undefined
+            };
+
+            const response = await fetch('/.netlify/functions/query-messages-analytics', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestBody)
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Failed to fetch analytics data');
+            }
+
+            const result = await response.json();
+
+            if (!result.success) {
+                throw new Error(result.error || 'Failed to fetch analytics data');
+            }
+
+            const messageAnalytics = new MessageAnalytics(result.data);
+            const comprehensiveSummary = messageAnalytics.getComprehensiveSummary();
+            comprehensiveSummary.messages = result.data;
+
+            this.analyticsResultsContainer.classList.remove('hidden');
+            this.messagingAnalyticsDashboard.render(comprehensiveSummary, result.filters);
+
+            this.uiManager.hideStatus();
+
+        } catch (error) {
+            alert('Error: ' + error.message);
+            this.uiManager.hideStatus();
+        }
     }
 }
 

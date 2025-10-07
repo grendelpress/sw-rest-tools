@@ -84,7 +84,12 @@
                     <h3>Messages</h3>
                     <p>View and download a CSV of all your messages</p>
                 </a>
-                
+
+                <a href="#" class="api-link analytics-link" data-type="messaging-analytics">
+                    <h3>📊 Analytics</h3>
+                    <p>Query message analytics with custom filters and view comprehensive dashboard</p>
+                </a>
+
                 <a href="#" class="api-link" data-endpoint="/generate-faxes-csv">
                     <h3>Faxes</h3>
                     <p>View and download a CSV of all your faxes</p>
@@ -106,6 +111,55 @@
                 </a>
             </div>
         </div>
+        <div id="messagingAnalyticsView" class="hidden">
+            <div class="analytics-view-header">
+                <h2>Messaging Analytics</h2>
+                <button id="backFromAnalyticsBtn" class="back-button">← Back to Menu</button>
+            </div>
+
+            <div class="analytics-query-form">
+                <h3>Query Filters</h3>
+                <form id="analyticsQueryForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="analyticsToNumber">To Number (E.164 Format):</label>
+                            <input type="text" id="analyticsToNumber" placeholder="+12345678901">
+                            <small class="help-text">Optional: Filter messages sent to this number</small>
+                            <small class="error-text hidden" id="toNumberError"></small>
+                        </div>
+                        <div class="form-group">
+                            <label for="analyticsFromNumber">From Number (E.164 Format):</label>
+                            <input type="text" id="analyticsFromNumber" placeholder="+12345678901">
+                            <small class="help-text">Optional: Filter messages sent from this number</small>
+                            <small class="error-text hidden" id="fromNumberError"></small>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="analyticsStartDate">Start Date:</label>
+                            <input type="date" id="analyticsStartDate">
+                        </div>
+                        <div class="form-group">
+                            <label for="analyticsEndDate">End Date:</label>
+                            <input type="date" id="analyticsEndDate">
+                        </div>
+                    </div>
+                    <div class="date-presets">
+                        <button type="button" class="preset-btn" data-days="30">Last 30 Days</button>
+                        <button type="button" class="preset-btn" data-days="60">Last 60 Days</button>
+                        <button type="button" class="preset-btn" data-days="90">Last 90 Days</button>
+                        <button type="button" class="preset-btn" data-days="120">Last 120 Days</button>
+                        <button type="button" id="clearAnalyticsFiltersBtn" class="preset-btn clear">Clear Filters</button>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="primary-btn">Generate Analytics</button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="analyticsResultsContainer" class="analytics-results-container hidden"></div>
+        </div>
+
         <div id="status" class="hidden">
             <div class="spinner"></div>
             <p>Processing request...</p>
