@@ -25,7 +25,10 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    const { projectId, authToken, spaceUrl, to, from, startDate, endDate } = JSON.parse(event.body);
+    const body = JSON.parse(event.body);
+    const { projectId, authToken, spaceUrl, to, from, startDate, endDate } = body;
+
+    console.log('Received request:', { to, from, startDate, endDate });
 
     // Validate E.164 format for phone numbers if provided
     const e164Regex = /^\+[1-9]\d{1,14}$/;
@@ -81,6 +84,20 @@ exports.handler = async (event, context) => {
     const messages = await client.messages.list(queryOptions);
 
     console.log('Messages received from API:', messages.length);
+
+    // If no messages found with filters, log a sample query without filters for debugging
+    if (messages.length === 0 && (to || from || startDate || endDate)) {
+      console.log('No messages found with filters. Testing query without filters...');
+      const allMessages = await client.messages.list({ limit: 5 });
+      console.log('Sample messages without filters:', allMessages.length);
+      if (allMessages.length > 0) {
+        console.log('Sample message structure:', {
+          to: allMessages[0].to,
+          from: allMessages[0].from,
+          dateSent: allMessages[0].dateSent
+        });
+      }
+    }
 
     // Format message data for analytics
     const data = messages.map((record) => ({
