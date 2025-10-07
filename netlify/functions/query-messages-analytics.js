@@ -65,14 +65,26 @@ exports.handler = async (event, context) => {
     if (from) {
       queryParams.append('From', from);
     }
+
+    // Build the URL with standard params first
+    let url = baseUrl;
+    const standardParams = queryParams.toString();
+
+    // Manually append date filters without encoding the comparison operators
+    const dateParams = [];
     if (startDate) {
-      queryParams.append('DateSent>', startDate);
+      dateParams.push(`DateSent>=${encodeURIComponent(startDate)}`);
     }
     if (endDate) {
-      queryParams.append('DateSent<', endDate);
+      dateParams.push(`DateSent<=${encodeURIComponent(endDate)}`);
     }
 
-    const url = queryParams.toString() ? `${baseUrl}?${queryParams.toString()}` : baseUrl;
+    // Combine all parameters
+    const allParams = [standardParams, ...dateParams].filter(p => p).join('&');
+    if (allParams) {
+      url = `${baseUrl}?${allParams}`;
+    }
+
     console.log('Request URL:', url);
 
     // Make direct HTTP request with Basic Auth
