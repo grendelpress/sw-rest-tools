@@ -57,12 +57,17 @@ exports.handler = async (event, context) => {
     // Build query options for filtering
     const queryOptions = {};
 
-    if (startDate) {
+    // Use dateSent for date filtering as per SignalWire API
+    if (startDate && endDate) {
+      // For date range, we need to use both dateSentAfter and dateSentBefore
       queryOptions.dateSentAfter = new Date(startDate + 'T00:00:00Z');
-    }
-    if (endDate) {
+      queryOptions.dateSentBefore = new Date(endDate + 'T23:59:59Z');
+    } else if (startDate) {
+      queryOptions.dateSentAfter = new Date(startDate + 'T00:00:00Z');
+    } else if (endDate) {
       queryOptions.dateSentBefore = new Date(endDate + 'T23:59:59Z');
     }
+
     if (to) {
       queryOptions.to = to;
     }
@@ -70,8 +75,12 @@ exports.handler = async (event, context) => {
       queryOptions.from = from;
     }
 
+    console.log('Query options:', JSON.stringify(queryOptions, null, 2));
+
     // Fetch all messages matching the criteria
     const messages = await client.messages.list(queryOptions);
+
+    console.log('Messages received from API:', messages.length);
 
     // Format message data for analytics
     const data = messages.map((record) => ({

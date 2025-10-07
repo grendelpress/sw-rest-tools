@@ -490,13 +490,19 @@ class SignalWireApp {
 
             const result = await response.json();
 
+            console.log('Analytics API Response:', result);
+
             if (!result.success) {
                 throw new Error(result.error || 'Failed to fetch analytics data');
             }
 
+            console.log('Message data count:', result.data?.length);
+
             const messageAnalytics = new MessageAnalytics(result.data);
             const comprehensiveSummary = messageAnalytics.getComprehensiveSummary();
             comprehensiveSummary.messages = result.data;
+
+            console.log('Analytics Summary:', comprehensiveSummary);
 
             this.analyticsResultsContainer.classList.remove('hidden');
             this.messagingAnalyticsDashboard.render(comprehensiveSummary, result.filters);
