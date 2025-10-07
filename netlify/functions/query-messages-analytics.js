@@ -88,7 +88,7 @@ exports.handler = async (event, context) => {
     // If no messages found with filters, log a sample query without filters for debugging
     if (messages.length === 0 && (to || from || startDate || endDate)) {
       console.log('No messages found with filters. Testing query without filters...');
-      const allMessages = await client.messages.list({ limit: 5 });
+      const allMessages = await client.messages.list({ pageSize: 5 });
       console.log('Sample messages without filters:', allMessages.length);
       if (allMessages.length > 0) {
         console.log('Sample message structure:', JSON.stringify({
