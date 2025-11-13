@@ -331,8 +331,8 @@ export class HighVolumeMessagesView {
         const resultsSection = document.getElementById('hvResultsSection');
         if (!resultsSection) return;
 
-        const analytics = new MessageAnalytics();
-        const analyticsData = analytics.analyzeMessages(this.allMessages, {});
+        const analytics = new MessageAnalytics(this.allMessages);
+        const analyticsData = analytics.getComprehensiveSummary();
 
         resultsSection.innerHTML = `
             <div class="results-header">
