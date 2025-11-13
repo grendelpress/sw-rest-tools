@@ -11,6 +11,7 @@ import { AnalyticsRenderer } from './analyticsRenderer.js';
 import { PhoneValidator } from './phoneValidator.js';
 import { MessageAnalytics } from './messageAnalytics.js';
 import { MessagingAnalyticsDashboard } from './messagingAnalyticsDashboard.js';
+import { HighVolumeMessagesView } from './highVolumeMessagesView.js';
 
 class SignalWireApp {
     constructor() {
@@ -20,6 +21,7 @@ class SignalWireApp {
         this.analytics = new Analytics();
         this.analyticsRenderer = new AnalyticsRenderer(document.getElementById('analyticsContainer'));
         this.messagingAnalyticsDashboard = new MessagingAnalyticsDashboard('analyticsResultsContainer');
+        this.highVolumeMessagesView = new HighVolumeMessagesView();
         this.currentDataType = '';
         this.currentProjectName = '';
         this.csvDataForDownload = null; // Store CSV data for special endpoints
@@ -270,6 +272,12 @@ class SignalWireApp {
             return;
         }
 
+        // Check if this is the high-volume messages link
+        if (analyticsType === 'high-volume-messages') {
+            this.showHighVolumeMessages();
+            return;
+        }
+
         const endpoint = link.dataset.endpoint;
 
         // Show date range section when API is selected
@@ -405,6 +413,10 @@ class SignalWireApp {
         document.getElementById('dateRangeSection').classList.add('hidden');
         this.messagingAnalyticsView.classList.remove('hidden');
         this.analyticsResultsContainer.classList.add('hidden');
+    }
+
+    showHighVolumeMessages() {
+        this.highVolumeMessagesView.show(this.credentials);
     }
 
     handleBackFromAnalytics() {
