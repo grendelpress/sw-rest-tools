@@ -171,8 +171,6 @@ export class ChunkFetchOrchestrator {
             endDate: endDate
         };
 
-        console.log('Fetching chunk:', startDate, 'to', endDate);
-
         const response = await fetch('/.netlify/functions/fetch-messages-chunk', {
             method: 'POST',
             headers: {
@@ -181,15 +179,11 @@ export class ChunkFetchOrchestrator {
             body: JSON.stringify(requestBody)
         });
 
-        const contentType = response.headers.get('content-type');
-        const isJson = contentType && contentType.includes('application/json');
-
-        console.log('Response status:', response.status, 'Content-Type:', contentType);
-
         if (!response.ok) {
             let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
             try {
-                if (isJson) {
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
                     const error = await response.json();
                     errorMessage = error.error || errorMessage;
                 } else {
@@ -202,11 +196,7 @@ export class ChunkFetchOrchestrator {
             throw new Error(errorMessage);
         }
 
-        try {
-            return await response.json();
-        } catch (e) {
-            throw new Error('Invalid JSON response from server: ' + e.message);
-        }
+        return await response.json();
     }
 
     async retryFailedChunk(credentials, chunkIndex) {
