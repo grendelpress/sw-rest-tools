@@ -26,29 +26,45 @@ exports.handler = async (event, context) => {
 
   try {
     const body = JSON.parse(event.body);
-    const { projectId, authToken, spaceUrl, startDate, endDate, pageSize = 1000 } = body;
+    const { projectId, authToken, spaceUrl, startDate, endDate, pageSize = 1000, nextPageUri } = body;
 
-    if (!projectId || !authToken || !spaceUrl || !startDate || !endDate) {
+    if (!projectId || !authToken || !spaceUrl) {
       return {
         statusCode: 400,
         headers: {
           'Access-Control-Allow-Origin': '*',
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ error: 'Missing required parameters: projectId, authToken, spaceUrl, startDate, endDate' })
+        body: JSON.stringify({ error: 'Missing required parameters: projectId, authToken, spaceUrl' })
       };
     }
 
-    const baseUrl = `https://${spaceUrl}/api/laml/2010-04-01/Accounts/${projectId}/Messages.json`;
-    const queryParams = new URLSearchParams();
-    queryParams.append('PageSize', pageSize.toString());
+    let url;
+    if (nextPageUri) {
+      url = `https://${spaceUrl}${nextPageUri}`;
+    } else {
+      if (!startDate || !endDate) {
+        return {
+          statusCode: 400,
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ error: 'Missing required parameters: startDate, endDate' })
+        };
+      }
 
-    const dateParams = [];
-    dateParams.push(`DateSent>=${encodeURIComponent(startDate)}`);
-    dateParams.push(`DateSent<=${encodeURIComponent(endDate)}`);
+      const baseUrl = `https://${spaceUrl}/api/laml/2010-04-01/Accounts/${projectId}/Messages.json`;
+      const queryParams = new URLSearchParams();
+      queryParams.append('PageSize', pageSize.toString());
 
-    const allParams = [queryParams.toString(), ...dateParams].filter(p => p).join('&');
-    const url = `${baseUrl}?${allParams}`;
+      const dateParams = [];
+      dateParams.push(`DateSent>=${encodeURIComponent(startDate)}`);
+      dateParams.push(`DateSent<=${encodeURIComponent(endDate)}`);
+
+      const allParams = [queryParams.toString(), ...dateParams].filter(p => p).join('&');
+      url = `${baseUrl}?${allParams}`;
+    }
 
     const response = await fetch(url, {
       method: 'GET',

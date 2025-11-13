@@ -163,40 +163,65 @@ export class ChunkFetchOrchestrator {
     }
 
     async fetchChunk(credentials, startDate, endDate) {
-        const requestBody = {
-            projectId: credentials.projectId,
-            authToken: credentials.authToken,
-            spaceUrl: credentials.spaceUrl,
-            startDate: startDate,
-            endDate: endDate
-        };
+        let allMessages = [];
+        let nextPageUri = null;
+        let hasMore = true;
 
-        const response = await fetch('/.netlify/functions/fetch-messages-chunk', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(requestBody)
-        });
+        while (hasMore) {
+            const requestBody = {
+                projectId: credentials.projectId,
+                authToken: credentials.authToken,
+                spaceUrl: credentials.spaceUrl,
+                startDate: startDate,
+                endDate: endDate,
+                nextPageUri: nextPageUri
+            };
 
-        if (!response.ok) {
-            let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
-            try {
-                const contentType = response.headers.get('content-type');
-                if (contentType && contentType.includes('application/json')) {
-                    const error = await response.json();
-                    errorMessage = error.error || errorMessage;
-                } else {
-                    const text = await response.text();
-                    errorMessage = text || errorMessage;
+            const response = await fetch('/.netlify/functions/fetch-messages-chunk', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestBody)
+            });
+
+            if (!response.ok) {
+                let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+                try {
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        const error = await response.json();
+                        errorMessage = error.error || errorMessage;
+                    } else {
+                        const text = await response.text();
+                        errorMessage = text || errorMessage;
+                    }
+                } catch (e) {
+                    console.error('Error parsing error response:', e);
                 }
-            } catch (e) {
-                console.error('Error parsing error response:', e);
+                throw new Error(errorMessage);
             }
-            throw new Error(errorMessage);
+
+            const result = await response.json();
+
+            if (result.success && result.data) {
+                allMessages.push(...result.data);
+                hasMore = result.hasMore;
+                nextPageUri = result.nextPageUri;
+            } else {
+                hasMore = false;
+            }
+
+            if (hasMore) {
+                await this.sleep(500);
+            }
         }
 
-        return await response.json();
+        return {
+            success: true,
+            data: allMessages,
+            count: allMessages.length
+        };
     }
 
     async retryFailedChunk(credentials, chunkIndex) {
