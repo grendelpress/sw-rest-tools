@@ -339,6 +339,22 @@ export class HighVolumeMessagesView {
 
     handleStorageLimit(data) {
         console.log('Storage limit reached:', data);
+
+        const result = {
+            success: true,
+            messages: this.orchestrator.allMessages,
+            totalMessages: this.orchestrator.allMessages.length,
+            chunks: this.orchestrator.chunks,
+            failedChunks: this.orchestrator.failedChunks,
+            skippedChunks: data.skippedChunks,
+            isStorageLimitReached: true,
+            lastCompletedDate: data.lastCompletedDate,
+            completedChunks: data.completedChunks,
+            elapsedTime: Date.now() - this.orchestrator.startTime,
+            storageReport: this.orchestrator.storageMonitor.getStorageReport()
+        };
+
+        this.handleFetchComplete(result);
     }
 
     handleFetchError(error) {
