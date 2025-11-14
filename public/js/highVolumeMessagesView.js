@@ -26,6 +26,10 @@ export class HighVolumeMessagesView {
         this.orchestrator.onError((error) => {
             this.handleFetchError(error);
         });
+
+        this.orchestrator.onStorageLimit((data) => {
+            this.handleStorageLimit(data);
+        });
     }
 
     show(credentials) {
@@ -229,6 +233,12 @@ export class HighVolumeMessagesView {
                         <span class="stat-value">${this.formatSeconds(estimatedSeconds)}</span>
                     </div>
                 ` : ''}
+                ${progress.storageReport && progress.storageReport.isNearLimit ? `
+                    <div class="stat-item ${progress.storageReport.isAtLimit ? 'stat-warning' : ''}">
+                        <span class="stat-label">Storage Used:</span>
+                        <span class="stat-value">${progress.storageReport.usagePercentage}%</span>
+                    </div>
+                ` : ''}
             </div>
 
             <div class="overall-progress">
@@ -252,6 +262,9 @@ export class HighVolumeMessagesView {
                         ${chunk.status === 'failed' ? `
                             <div class="chunk-error">${chunk.error || 'Failed'}</div>
                             <button class="retry-btn" data-index="${index}">↻ Retry</button>
+                        ` : ''}
+                        ${chunk.status === 'skipped' ? `
+                            <div class="chunk-error">Skipped - storage limit</div>
                         ` : ''}
                     </div>
                 `).join('')}
@@ -295,6 +308,7 @@ export class HighVolumeMessagesView {
             case 'in-progress': return '⚙️';
             case 'completed': return '✓';
             case 'failed': return '✗';
+            case 'skipped': return '⏭';
             default: return '';
         }
     }
@@ -320,23 +334,41 @@ export class HighVolumeMessagesView {
         document.getElementById('hvProgressSection').classList.add('hidden');
         document.getElementById('hvResultsSection').classList.remove('hidden');
 
-        this.renderResults();
+        this.renderResults(result);
+    }
+
+    handleStorageLimit(data) {
+        console.log('Storage limit reached:', data);
     }
 
     handleFetchError(error) {
         alert(`Error during fetch: ${error.error}\n\nYou can retry failed weeks or start over.`);
     }
 
-    renderResults() {
+    renderResults(result = {}) {
         const resultsSection = document.getElementById('hvResultsSection');
         if (!resultsSection) return;
 
         const analytics = new MessageAnalytics(this.allMessages);
         const analyticsData = analytics.getComprehensiveSummary();
+        const isPartialResult = result.isStorageLimitReached || false;
+        const skippedCount = result.skippedChunks ? result.skippedChunks.length : 0;
 
         resultsSection.innerHTML = `
+            ${isPartialResult ? `
+                <div class="storage-limit-alert">
+                    <div class="alert-icon">⚠️</div>
+                    <div class="alert-content">
+                        <h3>Storage Limit Reached</h3>
+                        <p>The fetch was stopped early because your browser's storage capacity was predicted to be exceeded.</p>
+                        <p><strong>Messages Retrieved:</strong> ${this.allMessages.length.toLocaleString()} messages from ${result.completedChunks} of ${result.completedChunks + skippedCount} weeks</p>
+                        <p><strong>Skipped:</strong> ${skippedCount} week(s) were not fetched</p>
+                        ${result.storageReport ? `<p class="storage-info">Storage Used: ${result.storageReport.currentSizeFormatted} of ${result.storageReport.totalQuotaFormatted} (${result.storageReport.usagePercentage}%)</p>` : ''}
+                    </div>
+                </div>
+            ` : ''}
             <div class="results-header">
-                <h3>Fetch Complete!</h3>
+                <h3>${isPartialResult ? 'Partial Results Available' : 'Fetch Complete!'}</h3>
                 <button id="startOverBtn" class="secondary-btn">← Start New Fetch</button>
             </div>
 
@@ -346,17 +378,25 @@ export class HighVolumeMessagesView {
                     <div class="summary-value">${this.allMessages.length.toLocaleString()}</div>
                 </div>
                 <div class="summary-card">
-                    <div class="summary-label">Date Range</div>
+                    <div class="summary-label">Date Range Completed</div>
                     <div class="summary-value">${analyticsData.dateRange?.formatted || 'N/A'}</div>
                 </div>
                 <div class="summary-card">
                     <div class="summary-label">Elapsed Time</div>
                     <div class="summary-value">${this.orchestrator.formatElapsedTime(Date.now() - this.orchestrator.startTime)}</div>
                 </div>
+                ${isPartialResult ? `
+                    <div class="summary-card highlight">
+                        <div class="summary-label">Status</div>
+                        <div class="summary-value">Partial - ${result.completedChunks}/${result.completedChunks + skippedCount} weeks</div>
+                    </div>
+                ` : ''}
             </div>
 
+            ${isPartialResult && result.lastCompletedDate ? this.renderContinuationHelper(result) : ''}
+
             <div class="results-actions">
-                <button id="exportAllBtn" class="primary-btn">📥 Export All to CSV</button>
+                <button id="exportAllBtn" class="primary-btn">📥 Export ${isPartialResult ? 'Partial' : 'All'} Results to CSV</button>
                 <button id="exportFilteredBtn" class="secondary-btn">📥 Export Filtered to CSV</button>
             </div>
 
@@ -396,6 +436,7 @@ export class HighVolumeMessagesView {
 
         this.renderResultsTable();
         this.attachResultsEventListeners();
+        this.attachContinuationListeners();
     }
 
     renderResultsTable() {
@@ -558,5 +599,86 @@ export class HighVolumeMessagesView {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    }
+
+    renderContinuationHelper(result) {
+        const lastDate = new Date(result.lastCompletedDate);
+        const nextStartDate = new Date(lastDate);
+        nextStartDate.setDate(nextStartDate.getDate() + 1);
+
+        const originalEndDate = this.orchestrator.chunks[this.orchestrator.chunks.length - 1].end;
+
+        return `
+            <div class="continuation-helper">
+                <div class="continuation-header">
+                    <h3>📅 Continue Fetching Remaining Data</h3>
+                    <p>To retrieve the rest of your messages, use this date range for your next query:</p>
+                </div>
+                <div class="continuation-dates">
+                    <div class="date-display">
+                        <span class="date-label">Next Start Date:</span>
+                        <span class="date-value">${this.formatDateForInput(nextStartDate)}</span>
+                    </div>
+                    <div class="date-arrow">→</div>
+                    <div class="date-display">
+                        <span class="date-label">End Date:</span>
+                        <span class="date-value">${originalEndDate}</span>
+                    </div>
+                </div>
+                <div class="continuation-actions">
+                    <button id="continueFromHereBtn" class="primary-btn"
+                        data-start="${this.formatDateForInput(nextStartDate)}"
+                        data-end="${originalEndDate}">
+                        Continue from ${this.formatDateForInput(nextStartDate)}
+                    </button>
+                    <button id="copyDatesBtn" class="secondary-btn"
+                        data-start="${this.formatDateForInput(nextStartDate)}"
+                        data-end="${originalEndDate}">
+                        📋 Copy Dates
+                    </button>
+                </div>
+                <div class="continuation-info">
+                    <p><strong>Tip:</strong> You can export your current results before continuing, then merge the CSV files later if needed.</p>
+                </div>
+            </div>
+        `;
+    }
+
+    attachContinuationListeners() {
+        const continueBtn = document.getElementById('continueFromHereBtn');
+        if (continueBtn) {
+            continueBtn.addEventListener('click', () => {
+                const startDate = continueBtn.dataset.start;
+                const endDate = continueBtn.dataset.end;
+
+                document.getElementById('hvStartDate').value = startDate;
+                document.getElementById('hvEndDate').value = endDate;
+
+                document.getElementById('hvResultsSection').classList.add('hidden');
+                document.getElementById('highVolumeForm').style.display = 'block';
+
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        }
+
+        const copyDatesBtn = document.getElementById('copyDatesBtn');
+        if (copyDatesBtn) {
+            copyDatesBtn.addEventListener('click', async () => {
+                const startDate = copyDatesBtn.dataset.start;
+                const endDate = copyDatesBtn.dataset.end;
+                const text = `Start: ${startDate}\nEnd: ${endDate}`;
+
+                try {
+                    await navigator.clipboard.writeText(text);
+                    copyDatesBtn.textContent = '✓ Copied!';
+                    setTimeout(() => {
+                        copyDatesBtn.textContent = '📋 Copy Dates';
+                    }, 2000);
+                } catch (err) {
+                    console.error('Failed to copy:', err);
+                    alert(`Copy these dates:\nStart: ${startDate}\nEnd: ${endDate}`);
+                }
+            });
+        }
     }
 }

@@ -1,17 +1,24 @@
+import { StorageMonitor } from './storageMonitor.js';
+
 export class ChunkFetchOrchestrator {
     constructor() {
         this.isPaused = false;
         this.isCancelled = false;
+        this.isStorageLimitReached = false;
         this.currentChunkIndex = 0;
         this.chunks = [];
         this.allMessages = [];
         this.startTime = null;
         this.completedChunks = 0;
         this.failedChunks = [];
+        this.skippedChunks = [];
         this.onProgressCallback = null;
         this.onCompleteCallback = null;
         this.onErrorCallback = null;
+        this.onStorageLimitCallback = null;
         this.delayBetweenRequests = 1000;
+        this.storageMonitor = new StorageMonitor();
+        this.lastCompletedChunkDate = null;
     }
 
     splitIntoWeeks(startDate, endDate) {
@@ -77,7 +84,11 @@ export class ChunkFetchOrchestrator {
                         totalMessages: this.allMessages.length,
                         chunks: this.chunks,
                         failedChunks: this.failedChunks,
-                        elapsedTime: Date.now() - this.startTime
+                        skippedChunks: this.skippedChunks,
+                        isStorageLimitReached: this.isStorageLimitReached,
+                        lastCompletedDate: this.lastCompletedChunkDate,
+                        elapsedTime: Date.now() - this.startTime,
+                        storageReport: this.storageMonitor.getStorageReport()
                     });
                 }
             }
@@ -129,8 +140,40 @@ export class ChunkFetchOrchestrator {
                     chunk.messageCount = result.data.length;
                     this.allMessages.push(...result.data);
                     this.completedChunks++;
+                    this.lastCompletedChunkDate = chunk.end;
 
-                    this.saveProgressToSession();
+                    const storagePrediction = this.storageMonitor.predictStorageNeeded(
+                        this.allMessages,
+                        i,
+                        this.chunks.length
+                    );
+
+                    if (!storagePrediction.canComplete && i < this.chunks.length - 1) {
+                        this.isStorageLimitReached = true;
+
+                        for (let j = i + 1; j < this.chunks.length; j++) {
+                            this.chunks[j].status = 'skipped';
+                            this.chunks[j].error = 'Storage limit reached';
+                            this.skippedChunks.push({
+                                index: j,
+                                chunk: this.chunks[j],
+                                reason: 'Storage limit predicted to be exceeded'
+                            });
+                        }
+
+                        if (this.onStorageLimitCallback) {
+                            this.onStorageLimitCallback({
+                                storagePrediction,
+                                messagesRetrieved: this.allMessages.length,
+                                completedChunks: this.completedChunks,
+                                totalChunks: this.chunks.length,
+                                lastCompletedDate: this.lastCompletedChunkDate,
+                                skippedChunks: this.skippedChunks
+                            });
+                        }
+
+                        break;
+                    }
                 } else {
                     throw new Error(result.error || 'Unknown error');
                 }
@@ -144,6 +187,8 @@ export class ChunkFetchOrchestrator {
                 });
             }
 
+            const storageReport = this.storageMonitor.getStorageReport();
+
             if (this.onProgressCallback) {
                 this.onProgressCallback({
                     totalChunks: this.chunks.length,
@@ -152,8 +197,13 @@ export class ChunkFetchOrchestrator {
                     currentChunkIndex: i,
                     allMessages: this.allMessages,
                     chunks: this.chunks,
-                    elapsedTime: Date.now() - this.startTime
+                    elapsedTime: Date.now() - this.startTime,
+                    storageReport
                 });
+            }
+
+            if (this.isStorageLimitReached) {
+                break;
             }
 
             if (i < this.chunks.length - 1) {
@@ -255,7 +305,7 @@ export class ChunkFetchOrchestrator {
                 this.completedChunks++;
 
                 this.failedChunks = this.failedChunks.filter(f => f.index !== chunkIndex);
-                this.saveProgressToSession();
+                this.lastCompletedChunkDate = chunk.end;
 
                 if (this.onProgressCallback) {
                     this.onProgressCallback({
@@ -309,23 +359,31 @@ export class ChunkFetchOrchestrator {
     reset() {
         this.isPaused = false;
         this.isCancelled = false;
+        this.isStorageLimitReached = false;
         this.currentChunkIndex = 0;
         this.chunks = [];
         this.allMessages = [];
         this.startTime = null;
         this.completedChunks = 0;
         this.failedChunks = [];
+        this.skippedChunks = [];
+        this.lastCompletedChunkDate = null;
     }
 
     saveProgressToSession() {
         try {
-            sessionStorage.setItem('chunkFetchProgress', JSON.stringify({
-                chunks: this.chunks,
-                allMessages: this.allMessages,
+            const minimalProgress = {
+                chunkStatus: this.chunks.map(c => ({
+                    start: c.start,
+                    end: c.end,
+                    status: c.status,
+                    messageCount: c.messageCount
+                })),
                 completedChunks: this.completedChunks,
-                failedChunks: this.failedChunks,
+                totalMessages: this.allMessages.length,
                 startTime: this.startTime
-            }));
+            };
+            sessionStorage.setItem('chunkFetchProgress', JSON.stringify(minimalProgress));
         } catch (e) {
             console.warn('Failed to save progress to session storage:', e);
         }
@@ -353,6 +411,10 @@ export class ChunkFetchOrchestrator {
 
     onError(callback) {
         this.onErrorCallback = callback;
+    }
+
+    onStorageLimit(callback) {
+        this.onStorageLimitCallback = callback;
     }
 
     getEstimatedTimeRemaining() {
