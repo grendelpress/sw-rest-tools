@@ -76,7 +76,7 @@ export class ChunkFetchOrchestrator {
         try {
             await this.processChunks(credentials);
 
-            if (!this.isCancelled) {
+            if (!this.isCancelled && !this.isStorageLimitReached) {
                 if (this.onCompleteCallback) {
                     this.onCompleteCallback({
                         success: true,

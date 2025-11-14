@@ -79,10 +79,11 @@ export class StorageMonitor {
         const remainingChunks = totalChunks - (currentChunkIndex + 1);
         const estimatedRemainingMessages = Math.ceil(avgMessagesPerChunk * remainingChunks);
 
-        const sampleMessageSize = this.estimateDataSize(currentMessages.slice(0, Math.min(10, currentMessages.length))) / Math.min(10, currentMessages.length);
+        const sampleSize = Math.min(100, currentMessages.length);
+        const sampleMessageSize = this.estimateDataSize(currentMessages.slice(0, sampleSize)) / sampleSize;
         const estimatedRemainingSize = estimatedRemainingMessages * sampleMessageSize;
 
-        const currentDataSize = this.estimateDataSize(currentMessages);
+        const currentDataSize = currentMessages.length * sampleMessageSize;
         const totalEstimatedSize = currentDataSize + estimatedRemainingSize;
         const availableSpace = this.getAvailableSpace();
 
