@@ -342,16 +342,16 @@ export class HighVolumeMessagesView {
 
         const result = {
             success: true,
-            messages: this.orchestrator.allMessages,
-            totalMessages: this.orchestrator.allMessages.length,
-            chunks: this.orchestrator.chunks,
-            failedChunks: this.orchestrator.failedChunks,
+            messages: data.messages,
+            totalMessages: data.messages.length,
+            chunks: data.chunks,
+            failedChunks: data.failedChunks || [],
             skippedChunks: data.skippedChunks,
             isStorageLimitReached: true,
             lastCompletedDate: data.lastCompletedDate,
             completedChunks: data.completedChunks,
             elapsedTime: Date.now() - this.orchestrator.startTime,
-            storageReport: this.orchestrator.storageMonitor.getStorageReport()
+            storageReport: data.storagePrediction
         };
 
         this.handleFetchComplete(result);

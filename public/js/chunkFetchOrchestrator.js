@@ -164,11 +164,14 @@ export class ChunkFetchOrchestrator {
                         if (this.onStorageLimitCallback) {
                             this.onStorageLimitCallback({
                                 storagePrediction,
+                                messages: this.allMessages,
                                 messagesRetrieved: this.allMessages.length,
                                 completedChunks: this.completedChunks,
                                 totalChunks: this.chunks.length,
                                 lastCompletedDate: this.lastCompletedChunkDate,
-                                skippedChunks: this.skippedChunks
+                                skippedChunks: this.skippedChunks,
+                                chunks: this.chunks,
+                                failedChunks: this.failedChunks
                             });
                         }
 
