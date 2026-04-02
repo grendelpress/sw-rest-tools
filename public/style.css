@@ -2027,3 +2027,306 @@ button:active {
         min-width: 0;
     }
 }
+
+/* Landing Page Styles */
+.landing-page {
+    background: linear-gradient(135deg, var(--sw-mist) 0%, var(--sw-breeze) 100%);
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+.landing-container {
+    max-width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.landing-header {
+    padding: 60px 20px 40px 20px;
+    text-align: center;
+    background: linear-gradient(135deg, var(--sw-blue) 0%, var(--sw-deep-sea) 100%);
+    color: var(--sw-white);
+    box-shadow: 0 4px 20px rgba(4, 78, 244, 0.2);
+}
+
+.header-content {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.landing-title {
+    font-size: 3rem;
+    font-weight: 700;
+    margin: 0 0 20px 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.landing-subtitle {
+    font-size: 1.25rem;
+    margin: 0;
+    opacity: 0.95;
+    font-weight: 400;
+    line-height: 1.6;
+}
+
+.landing-main {
+    flex: 1;
+    padding: 60px 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.tools-section {
+    margin-bottom: 60px;
+}
+
+.tools-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 30px;
+    margin-bottom: 40px;
+}
+
+.tool-card {
+    background: var(--sw-white);
+    border: 2px solid var(--sw-breeze);
+    border-radius: 16px;
+    padding: 35px;
+    box-shadow: 0 4px 20px rgba(4, 78, 244, 0.08);
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.tool-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 35px rgba(4, 78, 244, 0.18);
+    border-color: var(--sw-blue);
+}
+
+.tool-icon {
+    font-size: 64px;
+    margin-bottom: 20px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.tool-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--sw-deep-sea);
+    margin: 0 0 15px 0;
+}
+
+.tool-description {
+    font-size: 1rem;
+    color: var(--sw-gray-dark);
+    line-height: 1.6;
+    margin: 0 0 20px 0;
+    flex: 1;
+}
+
+.tool-features {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 25px;
+}
+
+.feature-badge {
+    background: linear-gradient(135deg, var(--sw-mist), var(--sw-breeze));
+    color: var(--sw-deep-sea);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border: 1px solid var(--sw-breeze);
+}
+
+.tool-button {
+    display: inline-block;
+    width: 100%;
+    max-width: 300px;
+    padding: 14px 28px;
+    background: linear-gradient(135deg, var(--sw-blue), var(--sw-deep-sea));
+    color: var(--sw-white);
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(4, 78, 244, 0.3);
+    text-align: center;
+}
+
+.tool-button:hover {
+    background: linear-gradient(135deg, var(--sw-deep-sea), var(--sw-blue));
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(4, 78, 244, 0.4);
+}
+
+.tool-button.primary {
+    background: linear-gradient(135deg, var(--sw-blue), var(--sw-deep-sea));
+}
+
+.info-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+    margin-top: 40px;
+}
+
+.info-card {
+    background: var(--sw-white);
+    border: 2px solid var(--sw-breeze);
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 2px 12px rgba(4, 78, 244, 0.06);
+}
+
+.info-card h3 {
+    margin: 0 0 15px 0;
+    color: var(--sw-deep-sea);
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.info-card p {
+    margin: 0;
+    color: var(--sw-gray-dark);
+    line-height: 1.6;
+}
+
+.landing-footer {
+    padding: 40px 20px;
+    background: var(--sw-white);
+    border-top: 2px solid var(--sw-breeze);
+    text-align: center;
+}
+
+.landing-footer .footer-content {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.landing-footer .github-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--sw-deep-sea);
+    text-decoration: none;
+    font-weight: 600;
+    padding: 10px 20px;
+    border-radius: 8px;
+    background: var(--sw-mist);
+    border: 2px solid var(--sw-breeze);
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(4, 78, 244, 0.1);
+}
+
+.landing-footer .github-link:hover {
+    background: var(--sw-breeze);
+    border-color: var(--sw-blue);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(4, 78, 244, 0.2);
+}
+
+.landing-footer .footer-text {
+    margin: 15px 0 0 0;
+    color: var(--sw-gray-medium);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+@media (max-width: 768px) {
+    .landing-title {
+        font-size: 2rem;
+    }
+
+    .landing-subtitle {
+        font-size: 1rem;
+    }
+
+    .landing-header {
+        padding: 40px 20px 30px 20px;
+    }
+
+    .landing-main {
+        padding: 40px 15px;
+    }
+
+    .tools-grid {
+        grid-template-columns: 1fr;
+        gap: 25px;
+    }
+
+    .tool-card {
+        padding: 25px;
+    }
+
+    .tool-icon {
+        font-size: 48px;
+    }
+
+    .tool-title {
+        font-size: 1.5rem;
+    }
+
+    .tool-description {
+        font-size: 0.95rem;
+    }
+
+    .info-section {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .landing-footer {
+        padding: 30px 15px;
+    }
+}
+
+.back-to-hub {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 1000;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: linear-gradient(135deg, var(--sw-blue), var(--sw-deep-sea));
+    color: var(--sw-white);
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    box-shadow: 0 4px 12px rgba(4, 78, 244, 0.3);
+    transition: all 0.3s ease;
+}
+
+.back-to-hub:hover {
+    background: linear-gradient(135deg, var(--sw-deep-sea), var(--sw-blue));
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(4, 78, 244, 0.4);
+}
+
+.back-to-hub svg {
+    width: 16px;
+    height: 16px;
+}
+
+@media (max-width: 768px) {
+    .back-to-hub {
+        position: relative;
+        top: 0;
+        left: 0;
+        margin: 10px auto 20px auto;
+        width: fit-content;
+    }
+}
