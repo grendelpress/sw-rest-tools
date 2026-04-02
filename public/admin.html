@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - SignalWire Support Hub</title>
+    <link rel="stylesheet" href="hub-style.css">
+    <link rel="stylesheet" href="admin-style.css">
+</head>
+<body>
+    <header class="main-header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo-section">
+                    <h1>Admin Panel</h1>
+                    <p class="tagline">Manage Support Hub Content</p>
+                </div>
+                <nav class="main-nav">
+                    <a href="/" class="nav-link">Home</a>
+                    <a href="/admin.html" class="nav-link active">Admin</a>
+                    <button id="logoutBtn" class="nav-link logout-btn">Logout</button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div id="loginSection" class="login-section">
+            <div class="login-container">
+                <h2>Admin Login</h2>
+                <p>Sign in to manage resources and repositories</p>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="email">Email:</label>
+                        <input type="email" id="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password:</label>
+                        <input type="password" id="password" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Login</button>
+                    <p id="loginError" class="error hidden"></p>
+                </form>
+            </div>
+        </div>
+
+        <div id="adminSection" class="admin-section hidden">
+            <div class="container">
+                <div class="admin-tabs">
+                    <button class="tab-btn active" data-tab="resources">Resources</button>
+                    <button class="tab-btn" data-tab="repositories">Repositories</button>
+                    <button class="tab-btn" data-tab="categories">Categories</button>
+                    <button class="tab-btn" data-tab="tags">Tags</button>
+                    <button class="tab-btn" data-tab="users">Users</button>
+                </div>
+
+                <div id="resourcesTab" class="tab-content active">
+                    <div class="tab-header">
+                        <h3>Manage Resources</h3>
+                        <button id="addResourceBtn" class="btn-primary">Add Resource</button>
+                    </div>
+                    <div id="resourcesList" class="admin-list">
+                        <div class="loading">Loading resources...</div>
+                    </div>
+                </div>
+
+                <div id="repositoriesTab" class="tab-content">
+                    <div class="tab-header">
+                        <h3>Manage Repositories</h3>
+                        <button id="addRepoBtn" class="btn-primary">Add Repository</button>
+                    </div>
+                    <div id="reposList" class="admin-list">
+                        <div class="loading">Loading repositories...</div>
+                    </div>
+                </div>
+
+                <div id="categoriesTab" class="tab-content">
+                    <div class="tab-header">
+                        <h3>Manage Categories</h3>
+                        <button id="addCategoryBtn" class="btn-primary">Add Category</button>
+                    </div>
+                    <div id="categoriesList" class="admin-list">
+                        <div class="loading">Loading categories...</div>
+                    </div>
+                </div>
+
+                <div id="tagsTab" class="tab-content">
+                    <div class="tab-header">
+                        <h3>Manage Tags</h3>
+                        <button id="addTagBtn" class="btn-primary">Add Tag</button>
+                    </div>
+                    <div id="tagsList" class="admin-list">
+                        <div class="loading">Loading tags...</div>
+                    </div>
+                </div>
+
+                <div id="usersTab" class="tab-content">
+                    <div class="tab-header">
+                        <h3>Manage Users</h3>
+                        <button id="inviteUserBtn" class="btn-primary">Invite User</button>
+                    </div>
+                    <div id="usersList" class="admin-list">
+                        <div class="loading">Loading users...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Add Item</h3>
+                <button id="closeModal" class="close-btn">&times;</button>
+            </div>
+            <form id="modalForm">
+                <div id="formFields"></div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn-primary">Save</button>
+                    <button type="button" id="cancelBtn" class="btn-secondary">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        window.SUPABASE_URL = 'https://sxnmfgefcfylgiqnthdw.supabase.co';
+        window.SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4bm1mZ2VmY2Z5bGdpcW50aGR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNjI4NzksImV4cCI6MjA5MDczODg3OX0.LoQiB15kimNPt6k74FeY8UBfOTIByzmEwgs2BCXEiVw';
+    </script>
+    <script type="module" src="js/admin.js"></script>
+</body>
+</html>

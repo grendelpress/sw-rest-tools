@@ -17,6 +17,16 @@ node_bundler = "esbuild"
   status = 200
 
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
+  from = "/resources"
+  to = "/resources.html"
+  status = 200
+
+[[redirects]]
+  from = "/repositories"
+  to = "/repositories.html"
+  status = 200
+
+[[redirects]]
+  from = "/admin"
+  to = "/admin.html"
   status = 200
