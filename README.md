@@ -1,10 +1,32 @@
-# SignalWire API Tools
+# SignalWire Support Resource Hub
 
-A comprehensive web-based tool for exporting SignalWire project data to CSV files. This application allows you to easily download your phone numbers, messages, faxes, calls, recordings, and LaML bins data from your SignalWire projects with advanced filtering, analytics, and data visualization capabilities.
+A comprehensive support resource portal featuring curated tools, code examples, integration guides, and troubleshooting utilities created by the SignalWire Support Team. This hub includes the popular API Export Tools along with a growing collection of resources to help customers succeed with SignalWire integrations.
+
+## Overview
+
+The SignalWire Support Resource Hub is a centralized platform where customers can find:
+
+- Interactive tools for working with SignalWire APIs
+- Code repositories with ready-to-use examples
+- Step-by-step integration guides
+- Troubleshooting utilities and validators
+- Comprehensive resource search and filtering
+
+All content is created, tested, and maintained by the SignalWire Support Team to ensure quality and reliability.
 
 ## Features
 
-### Data Export Capabilities
+### Support Hub Homepage
+
+- Searchable resource directory
+- Featured resources and recent additions
+- Browse by category (API Tools, Messaging, Voice, Authentication, etc.)
+- Statistics dashboard showing available resources
+- Quick access cards to popular tools
+
+### API Export Tools (available at `/tools.html`)
+
+#### Data Export Capabilities
 - **Phone Numbers Export**: Download a CSV of all your phone numbers with their friendly names and SIDs
 - **Messages Export**: Export all SMS/MMS messages with details like sender, recipient, date, status, and content
 - **Faxes Export**: Download fax records including status, direction, page count, and media URLs
@@ -22,15 +44,50 @@ A comprehensive web-based tool for exporting SignalWire project data to CSV file
 - **Responsive Design**: Works seamlessly on desktop and mobile devices
 - **Session Storage**: Securely stores credentials only in your browser session
 
+### Resources Page
+
+- Search across all resources by title and description
+- Filter by resource type (tool, guide, utility, example)
+- Filter by category and difficulty level
+- View resource metadata including tags and view counts
+- Direct links to resources and GitHub repositories
+
+### Repositories Showcase
+
+- Browse code examples and integration samples
+- Filter by programming language (JavaScript, Python, PHP, Ruby, Go, etc.)
+- View prerequisites and quick start instructions
+- See GitHub stars and last updated information
+- Collapsible sections for use cases and setup guides
+
+### Admin Panel
+
+- Secure authentication for support team members
+- Full CRUD operations for resources and repositories
+- Category and tag management
+- Featured resource selection
+- Modal-based editing interface
+
 ## Technologies Used
 
 - **Frontend**: Vanilla HTML, CSS, and JavaScript (ES6 modules)
+- **Database**: Supabase (PostgreSQL with Row Level Security)
 - **Backend**: Netlify Functions (Node.js)
-- **APIs**: 
+- **APIs**:
   - SignalWire Compatibility API (LaML)
   - SignalWire RELAY Voice API
   - SignalWire LaML Bins API
 - **Deployment**: Netlify
+
+## Site Structure
+
+```
+/                    - Homepage with featured resources and categories
+/resources.html      - All resources with search and filtering
+/repositories.html   - Code repositories showcase
+/tools.html          - API Export Tools (original functionality)
+/admin.html          - Admin panel for content management
+```
 
 ## Setup
 
@@ -38,14 +95,15 @@ A comprehensive web-based tool for exporting SignalWire project data to CSV file
 
 - Node.js (version 14 or higher)
 - npm or yarn package manager
-- A SignalWire account with API credentials
+- A SignalWire account with API credentials (for using the API tools)
+- A Supabase account and project (for the resource hub database)
 
 ### Installation
 
 1. Clone the repository:
    ```bash
    git clone <your-repo-url>
-   cd signalwire-api-tools
+   cd signalwire-support-hub
    ```
 
 2. Install dependencies:
@@ -53,91 +111,165 @@ A comprehensive web-based tool for exporting SignalWire project data to CSV file
    npm install
    ```
 
-3. Start the development server:
+3. Configure Supabase:
+   - The project is already connected to Supabase
+   - Database credentials are in the `.env` file
+   - All migrations have been applied automatically
+
+4. Start the development server:
    ```bash
    npm run dev
    ```
 
-4. Open your browser and navigate to `http://localhost:8888`
+5. Open your browser and navigate to `http://localhost:8888`
+
+### Database Setup
+
+The Supabase database is already configured with:
+
+- **Categories**: Predefined categories for organizing resources
+- **Tags**: System for tagging resources with keywords
+- **Resources**: Table for tools, guides, utilities, and examples
+- **Repositories**: Table for code examples and integration samples
+- **Row Level Security**: Public read access, authenticated write access
+
+Sample data has been added to demonstrate the hub functionality.
 
 ## Usage
 
-### Getting Started
+### For Customers
 
-1. **Enter Your Credentials**:
-   - Project ID: Your SignalWire project ID
-   - Auth Token: Your SignalWire authentication token
-   - Space URL: Your SignalWire space URL (e.g., `yourspace.signalwire.com`)
+#### Browsing Resources
 
-2. **Save Credentials**: Click "Save Credentials" to store them in your browser session
+1. Visit the homepage to see featured resources and categories
+2. Use the search bar to find specific tools or guides
+3. Browse by category using the category cards
+4. Click on any resource to view details or access the tool/guide
 
-3. **Optional Date Range**: Set a date range filter or leave blank for all data
+#### Using the API Export Tools
 
-### Available Export Options
+1. Navigate to `/tools.html`
+2. Enter your SignalWire credentials:
+   - Project ID
+   - Auth Token
+   - Space URL (e.g., `yourspace.signalwire.com`)
+3. Save credentials (stored only in your browser session)
+4. Choose which data to export (messages, calls, phone numbers, etc.)
+5. Optionally set date range filters
+6. View data in interactive tables with analytics
+7. Download as CSV files
 
-#### Phone Numbers & Resources
-- **Phone Numbers**: Export all your phone numbers with names and SIDs
-- **Recordings**: Export recording metadata with duration and URIs
-- **cXML Bins**: Export LaML bins with contents and usage statistics
+#### Exploring Code Repositories
 
-#### Messaging
-- **Messages**: Export SMS/MMS messages with full details
-- **Faxes**: Export fax records with status and page counts
+1. Visit `/repositories.html`
+2. Filter by programming language or category
+3. View prerequisites and quick start instructions
+4. Click to visit the GitHub repository
 
-#### Call Records
-- **LaML Calls (Legacy)**: Traditional call records from LaML/Compatibility API
-- **RELAY Calls**: Modern call logs from RELAY Voice API with enhanced details
+### For Support Team (Admin)
 
-### Data Interaction Features
+#### Managing Content
 
-4. **View Data**: After export, data is displayed in an interactive table
-5. **Analytics**: Click "Show Analytics" to view data insights and summaries
-6. **Filter & Search**: Use the search box and date filters to narrow down results
-7. **Download Options**: 
-   - Download All Data: Complete original dataset
-   - Download Filtered CSV: Only the currently filtered/searched results
+1. Navigate to `/admin.html`
+2. Sign in with your Supabase account credentials
+3. Use the tabs to manage:
+   - **Resources**: Add/edit tools, guides, utilities, and examples
+   - **Repositories**: Add/edit code example repositories
+   - **Categories**: Manage resource categories
+   - **Tags**: Create and manage tags
+
+#### Adding a New Resource
+
+1. Click "Add Resource" button
+2. Fill in the form:
+   - Title and description
+   - Select category and type
+   - Set difficulty level
+   - Add URL and GitHub URL (if applicable)
+   - Mark as featured to display on homepage
+3. Click Save
+
+#### Adding a New Repository
+
+1. Click "Add Repository" button
+2. Fill in the form:
+   - Name and description
+   - GitHub URL
+   - Programming language
+   - Category and use case
+   - Prerequisites and quick start instructions
+3. Click Save
 
 ## Security & Privacy
 
-⚠️ **Important Security Notes**:
+### API Tools Security
 
-- **No Data Storage**: This application does not store any of your SignalWire credentials or data on any server
-- **Session-Only Storage**: Credentials are only stored in your browser's session storage and are cleared when you close the browser
-- **Direct API Calls**: All API calls are made directly from Netlify Functions to SignalWire's servers
-- **Safe for Public Repos**: This codebase contains no hardcoded credentials or sensitive information
+- **No Data Storage**: SignalWire credentials are not stored on any server
+- **Session-Only Storage**: Credentials are stored only in browser session storage
+- **Direct API Calls**: All API calls go directly from Netlify Functions to SignalWire
+- **No Third-Party Transmission**: Credentials are never sent to third parties
 
-Your SignalWire credentials are only used temporarily to make API calls and generate CSV files. They are never logged, stored permanently, or transmitted to any third-party services.
+### Database Security
+
+- **Row Level Security (RLS)**: Enabled on all tables
+- **Public Read Access**: Anyone can view resources (intended behavior)
+- **Authenticated Write Access**: Only authenticated users can manage content
+- **No Anonymous Writes**: Public users cannot add, edit, or delete content
+
+### Best Practices for Production
+
+If deploying this publicly, consider:
+
+1. Adding role-based access control (RBAC) for admin functions
+2. Implementing rate limiting on API endpoints
+3. Adding audit logging for content changes
+4. Using environment variables for sensitive configuration
+5. Setting up backup and recovery procedures for the database
 
 ## File Structure
 
 ```
 ├── netlify/
-│   └── functions/              # Serverless functions for API calls
-│       ├── generate-calls-csv.js       # LaML calls export
-│       ├── generate-relay-calls-csv.js # RELAY calls export
-│       ├── generate-faxes-csv.js       # Faxes export
-│       ├── generate-messages-csv.js    # Messages export
-│       ├── generate-numbers-csv.js     # Phone numbers export
-│       ├── generate-recordings-csv.js  # Recordings export
-│       ├── generate-bins-csv.js        # LaML bins export
-│       └── test-bins-api.js            # Bins API testing endpoint
+│   └── functions/                       # Serverless functions for API calls
+│       ├── generate-calls-csv.js        # LaML calls export
+│       ├── generate-relay-calls-csv.js  # RELAY calls export
+│       ├── generate-faxes-csv.js        # Faxes export
+│       ├── generate-messages-csv.js     # Messages export
+│       ├── generate-numbers-csv.js      # Phone numbers export
+│       ├── generate-recordings-csv.js   # Recordings export
+│       ├── generate-bins-csv.js         # LaML bins export
+│       └── test-bins-api.js             # Bins API testing endpoint
 ├── public/
-│   ├── index.html                      # Main application interface
-│   ├── style.css                       # Application styles
-│   └── js/                             # Modular JavaScript components
-│       ├── app.js                      # Main application controller
-│       ├── analytics.js                # Analytics data processing
-│       ├── analyticsRenderer.js        # Analytics UI rendering
-│       ├── apiClient.js                # API request handling
-│       ├── csvUtils.js                 # CSV parsing and generation
-│       ├── dataFilter.js               # Data filtering and search
-│       ├── dataTable.js                # Table rendering
-│       ├── dateUtils.js                # Date handling utilities
-│       ├── storage.js                  # Session storage management
-│       └── uiManager.js                # UI state management
-├── netlify.toml                        # Netlify configuration
-├── package.json                        # Project dependencies
-└── README.md                           # This file
+│   ├── index.html                       # Support Hub homepage
+│   ├── tools.html                       # API Export Tools interface
+│   ├── resources.html                   # All resources page
+│   ├── repositories.html                # Code repositories showcase
+│   ├── admin.html                       # Admin panel for content management
+│   ├── hub-style.css                    # Hub-wide styles
+│   ├── resources-style.css              # Resources page styles
+│   ├── repositories-style.css           # Repositories page styles
+│   ├── admin-style.css                  # Admin panel styles
+│   ├── style.css                        # API Tools styles
+│   └── js/                              # JavaScript modules
+│       ├── home.js                      # Homepage controller
+│       ├── resources.js                 # Resources page controller
+│       ├── repositories.js              # Repositories page controller
+│       ├── admin.js                     # Admin panel controller
+│       ├── supabaseClient.js            # Supabase database client
+│       ├── app.js                       # API Tools main controller
+│       ├── analytics.js                 # Analytics processing
+│       ├── analyticsRenderer.js         # Analytics UI rendering
+│       ├── apiClient.js                 # API request handling
+│       ├── csvUtils.js                  # CSV utilities
+│       ├── dataFilter.js                # Data filtering
+│       ├── dataTable.js                 # Table rendering
+│       ├── dateUtils.js                 # Date utilities
+│       ├── storage.js                   # Session storage
+│       └── uiManager.js                 # UI state management
+├── netlify.toml                         # Netlify configuration with redirects
+├── package.json                         # Project dependencies
+├── .env                                 # Environment variables (Supabase config)
+└── README.md                            # This file
 ```
 
 ## Development

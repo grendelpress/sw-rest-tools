@@ -16,7 +16,33 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     min-height: 100vh;
     margin: 0;
-    padding: 20px 0;
+    padding: 0;
+}
+
+.hub-banner {
+    background: linear-gradient(135deg, var(--sw-blue) 0%, var(--sw-deep-sea) 100%);
+    padding: 12px 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.hub-banner-content {
+    max-width: 95%;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.back-to-hub {
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    display: inline-flex;
+    align-items: center;
+    transition: opacity 0.2s ease;
+}
+
+.back-to-hub:hover {
+    opacity: 0.85;
 }
 
 .container {
