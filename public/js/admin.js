@@ -31,8 +31,8 @@ function showAdminSection() {
 async function handleLogin(e) {
   e.preventDefault();
 
-  const email = document.getElementById('loginEmail').value;
-  const password = document.getElementById('loginPassword').value;
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
   const errorEl = document.getElementById('loginError');
 
   try {
@@ -49,66 +49,6 @@ async function handleLogin(e) {
     errorEl.textContent = error.message;
     errorEl.classList.remove('hidden');
   }
-}
-
-async function handleSignup(e) {
-  e.preventDefault();
-
-  const email = document.getElementById('signupEmail').value;
-  const password = document.getElementById('signupPassword').value;
-  const confirmPassword = document.getElementById('confirmPassword').value;
-  const errorEl = document.getElementById('signupError');
-
-  errorEl.classList.add('hidden');
-
-  if (password !== confirmPassword) {
-    errorEl.textContent = 'Passwords do not match';
-    errorEl.classList.remove('hidden');
-    return;
-  }
-
-  if (password.length < 6) {
-    errorEl.textContent = 'Password must be at least 6 characters';
-    errorEl.classList.remove('hidden');
-    return;
-  }
-
-  try {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password
-    });
-
-    if (error) throw error;
-
-    currentUser = data.user;
-    showAdminSection();
-  } catch (error) {
-    errorEl.textContent = error.message;
-    errorEl.classList.remove('hidden');
-  }
-}
-
-function toggleAuthForm(showSignup) {
-  const loginForm = document.getElementById('loginFormContainer');
-  const signupForm = document.getElementById('signupFormContainer');
-  const loginTab = document.getElementById('loginTab');
-  const signupTab = document.getElementById('signupTab');
-
-  if (showSignup) {
-    loginForm.classList.add('hidden');
-    signupForm.classList.remove('hidden');
-    loginTab.classList.remove('active');
-    signupTab.classList.add('active');
-  } else {
-    signupForm.classList.add('hidden');
-    loginForm.classList.remove('hidden');
-    signupTab.classList.remove('active');
-    loginTab.classList.add('active');
-  }
-
-  document.getElementById('loginError').classList.add('hidden');
-  document.getElementById('signupError').classList.add('hidden');
 }
 
 async function handleLogout() {
@@ -435,11 +375,59 @@ window.deleteTag = async (id) => {
   }
 };
 
+async function loadUsersList() {
+  const container = document.getElementById('usersList');
+  try {
+    const { data: invitations, error } = await supabase
+      .from('user_invitations')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    if (invitations.length === 0) {
+      container.innerHTML = '<p class="no-results">No user invitations yet. Invite your first user!</p>';
+      return;
+    }
+
+    container.innerHTML = invitations.map(invitation => {
+      const statusBadge = invitation.accepted_at
+        ? '<span style="color: #38a169; font-weight: 600;">Accepted</span>'
+        : invitation.expires_at && new Date(invitation.expires_at) < new Date()
+        ? '<span style="color: #e53e3e; font-weight: 600;">Expired</span>'
+        : '<span style="color: #d69e2e; font-weight: 600;">Pending</span>';
+
+      return `
+        <div class="admin-item">
+          <div class="item-content">
+            <h4>${invitation.email}</h4>
+            <div class="item-meta">
+              <span>Status: ${statusBadge}</span>
+              <span>Invited: ${new Date(invitation.created_at).toLocaleDateString()}</span>
+              ${invitation.accepted_at ? `<span>Accepted: ${new Date(invitation.accepted_at).toLocaleDateString()}</span>` : ''}
+            </div>
+          </div>
+          <div class="item-actions">
+            ${!invitation.accepted_at ? `<button class="btn-delete" onclick="window.revokeInvitation('${invitation.id}')">Revoke</button>` : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+  } catch (error) {
+    console.error('Error loading users:', error);
+    container.innerHTML = '<p class="error">Failed to load users.</p>';
+  }
+}
+
+window.revokeInvitation = async (id) => {
+  if (confirm('Are you sure you want to revoke this invitation?')) {
+    await supabase.from('user_invitations').delete().eq('id', id);
+    loadUsersList();
+  }
+};
+
 function setupEventListeners() {
   document.getElementById('loginForm').addEventListener('submit', handleLogin);
-  document.getElementById('signupForm').addEventListener('submit', handleSignup);
-  document.getElementById('loginTab').addEventListener('click', () => toggleAuthForm(false));
-  document.getElementById('signupTab').addEventListener('click', () => toggleAuthForm(true));
   document.getElementById('logoutBtn').addEventListener('click', handleLogout);
 
   document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -456,6 +444,7 @@ function setupEventListeners() {
       else if (tab === 'repositories') loadReposList();
       else if (tab === 'categories') loadCategoriesList();
       else if (tab === 'tags') loadTagsList();
+      else if (tab === 'users') loadUsersList();
     });
   });
 
@@ -535,6 +524,35 @@ function setupEventListeners() {
       await supabase.from('tags').insert(data);
       tags = await getTags();
       loadTagsList();
+    });
+  });
+
+  document.getElementById('inviteUserBtn').addEventListener('click', () => {
+    openModal('Invite User', [
+      { name: 'email', label: 'Email', type: 'email', required: true }
+    ], async (data) => {
+      try {
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + 7);
+
+        const invitationToken = crypto.randomUUID();
+
+        const { error } = await supabase.from('user_invitations').insert({
+          email: data.email,
+          invitation_token: invitationToken,
+          expires_at: expiresAt.toISOString()
+        });
+
+        if (error) throw error;
+
+        const inviteUrl = `${window.location.origin}/accept-invite.html?token=${invitationToken}`;
+
+        alert(`Invitation created! Share this link with the user:\n\n${inviteUrl}\n\nThis link will expire in 7 days.`);
+
+        loadUsersList();
+      } catch (error) {
+        alert('Failed to create invitation: ' + error.message);
+      }
     });
   });
 
