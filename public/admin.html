@@ -27,20 +27,48 @@
     <main>
         <div id="loginSection" class="login-section">
             <div class="login-container">
-                <h2>Admin Login</h2>
-                <p>Sign in to manage resources and repositories</p>
-                <form id="loginForm">
-                    <div class="form-group">
-                        <label for="email">Email:</label>
-                        <input type="email" id="email" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="password">Password:</label>
-                        <input type="password" id="password" required>
-                    </div>
-                    <button type="submit" class="btn-primary">Login</button>
-                    <p id="loginError" class="error hidden"></p>
-                </form>
+                <div class="auth-tabs">
+                    <button id="loginTab" class="auth-tab-btn active">Login</button>
+                    <button id="signupTab" class="auth-tab-btn">Sign Up</button>
+                </div>
+
+                <div id="loginFormContainer" class="auth-form-container">
+                    <h2>Admin Login</h2>
+                    <p>Sign in to manage resources and repositories</p>
+                    <form id="loginForm">
+                        <div class="form-group">
+                            <label for="loginEmail">Email:</label>
+                            <input type="email" id="loginEmail" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="loginPassword">Password:</label>
+                            <input type="password" id="loginPassword" required>
+                        </div>
+                        <button type="submit" class="btn-primary">Login</button>
+                        <p id="loginError" class="error hidden"></p>
+                    </form>
+                </div>
+
+                <div id="signupFormContainer" class="auth-form-container hidden">
+                    <h2>Create Admin Account</h2>
+                    <p>Sign up to create your admin account</p>
+                    <form id="signupForm">
+                        <div class="form-group">
+                            <label for="signupEmail">Email:</label>
+                            <input type="email" id="signupEmail" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="signupPassword">Password:</label>
+                            <input type="password" id="signupPassword" required minlength="6">
+                        </div>
+                        <div class="form-group">
+                            <label for="confirmPassword">Confirm Password:</label>
+                            <input type="password" id="confirmPassword" required minlength="6">
+                        </div>
+                        <button type="submit" class="btn-primary">Sign Up</button>
+                        <p id="signupError" class="error hidden"></p>
+                    </form>
+                </div>
             </div>
         </div>
 

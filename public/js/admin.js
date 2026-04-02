@@ -31,8 +31,8 @@ function showAdminSection() {
 async function handleLogin(e) {
   e.preventDefault();
 
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
+  const email = document.getElementById('loginEmail').value;
+  const password = document.getElementById('loginPassword').value;
   const errorEl = document.getElementById('loginError');
 
   try {
@@ -49,6 +49,66 @@ async function handleLogin(e) {
     errorEl.textContent = error.message;
     errorEl.classList.remove('hidden');
   }
+}
+
+async function handleSignup(e) {
+  e.preventDefault();
+
+  const email = document.getElementById('signupEmail').value;
+  const password = document.getElementById('signupPassword').value;
+  const confirmPassword = document.getElementById('confirmPassword').value;
+  const errorEl = document.getElementById('signupError');
+
+  errorEl.classList.add('hidden');
+
+  if (password !== confirmPassword) {
+    errorEl.textContent = 'Passwords do not match';
+    errorEl.classList.remove('hidden');
+    return;
+  }
+
+  if (password.length < 6) {
+    errorEl.textContent = 'Password must be at least 6 characters';
+    errorEl.classList.remove('hidden');
+    return;
+  }
+
+  try {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password
+    });
+
+    if (error) throw error;
+
+    currentUser = data.user;
+    showAdminSection();
+  } catch (error) {
+    errorEl.textContent = error.message;
+    errorEl.classList.remove('hidden');
+  }
+}
+
+function toggleAuthForm(showSignup) {
+  const loginForm = document.getElementById('loginFormContainer');
+  const signupForm = document.getElementById('signupFormContainer');
+  const loginTab = document.getElementById('loginTab');
+  const signupTab = document.getElementById('signupTab');
+
+  if (showSignup) {
+    loginForm.classList.add('hidden');
+    signupForm.classList.remove('hidden');
+    loginTab.classList.remove('active');
+    signupTab.classList.add('active');
+  } else {
+    signupForm.classList.add('hidden');
+    loginForm.classList.remove('hidden');
+    signupTab.classList.remove('active');
+    loginTab.classList.add('active');
+  }
+
+  document.getElementById('loginError').classList.add('hidden');
+  document.getElementById('signupError').classList.add('hidden');
 }
 
 async function handleLogout() {
@@ -377,6 +437,9 @@ window.deleteTag = async (id) => {
 
 function setupEventListeners() {
   document.getElementById('loginForm').addEventListener('submit', handleLogin);
+  document.getElementById('signupForm').addEventListener('submit', handleSignup);
+  document.getElementById('loginTab').addEventListener('click', () => toggleAuthForm(false));
+  document.getElementById('signupTab').addEventListener('click', () => toggleAuthForm(true));
   document.getElementById('logoutBtn').addEventListener('click', handleLogout);
 
   document.querySelectorAll('.tab-btn').forEach(btn => {

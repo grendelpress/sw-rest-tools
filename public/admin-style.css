@@ -26,6 +26,50 @@
   margin-bottom: calc(var(--spacing) * 3);
 }
 
+.auth-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: calc(var(--spacing) * 3);
+  border-bottom: 2px solid var(--border);
+}
+
+.auth-tab-btn {
+  flex: 1;
+  padding: calc(var(--spacing) * 2);
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--sw-text-light);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.auth-tab-btn:hover {
+  color: var(--sw-blue);
+}
+
+.auth-tab-btn.active {
+  color: var(--sw-blue);
+  border-bottom-color: var(--sw-blue);
+}
+
+.auth-form-container {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .form-group {
   margin-bottom: calc(var(--spacing) * 2.5);
 }
