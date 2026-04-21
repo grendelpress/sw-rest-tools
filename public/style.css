@@ -2133,9 +2133,10 @@ button:active {
 }
 
 .feedback-invite {
-    margin: 14px 0 0 0;
+    margin: 0 0 16px 0;
     font-size: 0.875rem;
     color: var(--sw-gray-dark);
+    font-style: italic;
 }
 
 .feedback-invite a {
