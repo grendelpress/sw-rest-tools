@@ -2092,6 +2092,7 @@ button:active {
 }
 
 .tool-card {
+    position: relative;
     background: var(--sw-white);
     border: 2px solid var(--sw-breeze);
     border-radius: 16px;
@@ -2102,6 +2103,51 @@ button:active {
     flex-direction: column;
     align-items: center;
     text-align: center;
+}
+
+.new-badge {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: linear-gradient(135deg, #ff6b35, #e63946);
+    color: #ffffff;
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    box-shadow: 0 4px 12px rgba(230, 57, 70, 0.35);
+    animation: new-badge-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes new-badge-pulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 4px 12px rgba(230, 57, 70, 0.35);
+    }
+    50% {
+        transform: scale(1.06);
+        box-shadow: 0 6px 18px rgba(230, 57, 70, 0.55);
+    }
+}
+
+.feedback-invite {
+    margin: 14px 0 0 0;
+    font-size: 0.875rem;
+    color: var(--sw-gray-dark);
+}
+
+.feedback-invite a {
+    color: var(--sw-blue);
+    font-weight: 600;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.2s ease;
+}
+
+.feedback-invite a:hover {
+    border-bottom-color: var(--sw-blue);
 }
 
 .tool-card:hover {
