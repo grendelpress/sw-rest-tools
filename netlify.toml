@@ -5,28 +5,3 @@ command = "echo 'No build step needed for static site'"
 
 [functions]
 node_bundler = "esbuild"
-
-[[redirects]]
-  from = "/.netlify/functions/*"
-  to = "/.netlify/functions/:splat"
-  status = 200
-
-[[redirects]]
-  from = "/tools"
-  to = "/tools.html"
-  status = 200
-
-[[redirects]]
-  from = "/resources"
-  to = "/resources.html"
-  status = 200
-
-[[redirects]]
-  from = "/repositories"
-  to = "/repositories.html"
-  status = 200
-
-[[redirects]]
-  from = "/admin"
-  to = "/admin.html"
-  status = 200
