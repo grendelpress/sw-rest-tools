@@ -17,9 +17,13 @@ export class Analytics {
             case 'Messages':
                 return this.generateMessagesSummary();
             case 'Calls':
+            case 'RELAY Calls':
                 return this.generateCallsSummary();
             case 'Faxes':
                 return this.generateFaxesSummary();
+            case 'cXML Bins':
+            case 'Bins':
+                return this.generateBinsSummary();
             default:
                 return this.generateGenericSummary();
         }
@@ -60,10 +64,13 @@ export class Analytics {
         const total = this.data.length;
         const statusBreakdown = this.getFieldBreakdown('Status');
         const directionBreakdown = this.getFieldBreakdown('Direction');
-        const dateRange = this.getDateRange(['Start Time']);
+        const dateRange = this.getDateRange(['Start Time', 'Created At']);
         const totalCost = this.calculateTotalCost();
-        const totalDuration = this.calculateTotalDuration();
-        const avgDuration = this.calculateAverage('Duration (seconds)');
+        
+        // Handle both LaML calls (Duration (seconds)) and RELAY calls (Duration)
+        const durationField = this.data[0] && this.data[0]['Duration (seconds)'] !== undefined ? 'Duration (seconds)' : 'Duration';
+        const totalDuration = this.calculateTotalDuration(durationField);
+        const avgDuration = this.calculateAverage(durationField);
         
         // Top callers/receivers
         const topCallers = this.getTopValues('From', 5);
@@ -120,6 +127,43 @@ export class Analytics {
                 { title: 'Top Recipients', data: topReceivers }
             ]
         };
+    }
+    
+    generateBinsSummary() {
+        const total = this.data.length;
+        const dateRange = this.getDateRange(['Date Created', 'Date Updated', 'Date Last Accessed']);
+        const totalWithContents = this.data.filter(row => row['Contents'] && row['Contents'].trim()).length;
+        const avgContentLength = this.calculateAverageContentLength();
+        const lastAccessedCount = this.data.filter(row => row['Date Last Accessed'] && row['Date Last Accessed'].trim()).length;
+        
+        // Top bins by name
+        const topBins = this.getTopValues('Name', 10);
+        
+        return {
+            title: 'cXML Bins Analytics',
+            metrics: [
+                { label: 'Total Bins', value: total.toLocaleString(), type: 'primary' },
+                { label: 'Date Range', value: dateRange, type: 'info' },
+                { label: 'With Contents', value: totalWithContents.toLocaleString(), type: 'secondary' },
+                { label: 'Avg Content Length', value: `${avgContentLength} chars`, type: 'secondary' },
+                { label: 'Recently Accessed', value: lastAccessedCount.toLocaleString(), type: 'info' }
+            ],
+            breakdowns: [],
+            topLists: [
+                { title: 'Bin Names', data: topBins }
+            ]
+        };
+    }
+    
+    calculateAverageContentLength() {
+        const contentLengths = this.data
+            .map(row => (row['Contents'] || '').length)
+            .filter(length => length > 0);
+        
+        if (contentLengths.length === 0) return 0;
+        
+        const average = contentLengths.reduce((sum, length) => sum + length, 0) / contentLengths.length;
+        return Math.round(average);
     }
     
     generateGenericSummary() {
@@ -225,8 +269,8 @@ export class Analytics {
         return values.reduce((sum, value) => sum + value, 0) / values.length;
     }
     
-    calculateTotalDuration() {
-        const totalSeconds = this.calculateTotal('Duration (seconds)');
+    calculateTotalDuration(durationField = 'Duration (seconds)') {
+        const totalSeconds = this.calculateTotal(durationField);
         return this.formatDuration(totalSeconds);
     }
     

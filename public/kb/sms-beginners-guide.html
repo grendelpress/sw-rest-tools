@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Beginner's Guide to Using SMS with SignalWire</title>
+    <meta name="description" content="Learn how to send and receive SMS with SignalWire — from simple message forwarding to webhook integration.">
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body class="landing-page">
+    <a href="../kb.html" class="back-to-hub">
+        <svg viewBox="0 0 16 16" fill="currentColor">
+            <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+        </svg>
+        Knowledge Base
+    </a>
+
+    <div class="landing-container">
+        <header class="landing-header">
+            <div class="header-content">
+                <div class="article-header-meta">
+                    <span class="kb-category-pill sms">SMS</span>
+                    <span class="kb-level-pill beginner">Beginner</span>
+                </div>
+                <h1 class="landing-title" style="font-size: 2rem;">A Beginner's Guide to Using SMS with SignalWire</h1>
+                <p class="landing-subtitle">Send and receive text messages — no coding background required</p>
+            </div>
+        </header>
+
+        <div class="article-page-layout">
+            <aside class="article-toc">
+                <div class="toc-inner">
+                    <h4 class="toc-heading">On this page</h4>
+                    <nav aria-label="Table of contents">
+                        <ol class="toc-list">
+                            <li><a href="#introduction" class="toc-link">Introduction</a></li>
+                            <li><a href="#two-approaches" class="toc-link">Two Main Approaches</a></li>
+                            <li>
+                                <a href="#forwarding" class="toc-link">SMS Forwarding</a>
+                                <ol class="toc-sublist">
+                                    <li><a href="#forwarding-setup" class="toc-link">Setting Up</a></li>
+                                    <li><a href="#forwarding-limits" class="toc-link">Limitations</a></li>
+                                </ol>
+                            </li>
+                            <li>
+                                <a href="#webhooks" class="toc-link">Webhooks &amp; Integration</a>
+                                <ol class="toc-sublist">
+                                    <li><a href="#what-is-webhook" class="toc-link">What Is a Webhook?</a></li>
+                                    <li><a href="#status-callbacks" class="toc-link">Status Callbacks</a></li>
+                                </ol>
+                            </li>
+                            <li>
+                                <a href="#setup" class="toc-link">Setting Up Your Webhook</a>
+                                <ol class="toc-sublist">
+                                    <li><a href="#create-resource" class="toc-link">Create a Resource</a></li>
+                                    <li><a href="#attach-resource" class="toc-link">Attach to Phone Number</a></li>
+                                </ol>
+                            </li>
+                            <li>
+                                <a href="#webhook-purposes" class="toc-link">Webhook Deep Dive</a>
+                                <ol class="toc-sublist">
+                                    <li><a href="#incoming-sms" class="toc-link">Incoming Messages</a></li>
+                                    <li><a href="#delivery-receipts" class="toc-link">Delivery Receipts</a></li>
+                                </ol>
+                            </li>
+                            <li><a href="#troubleshooting" class="toc-link">Troubleshooting</a></li>
+                            <li><a href="#conclusion" class="toc-link">Conclusion</a></li>
+                        </ol>
+                    </nav>
+                </div>
+            </aside>
+
+            <article class="article-body">
+
+                <!-- Introduction -->
+                <section id="introduction">
+                    <h2>Introduction<a href="#introduction" class="heading-anchor" aria-label="Link to Introduction"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M7.775 3.275a.75.75 0 0 0 1.06 1.06l1.25-1.25a2 2 0 1 1 2.83 2.83l-2.5 2.5a2 2 0 0 1-2.83 0 .75.75 0 0 0-1.06 1.06 3.5 3.5 0 0 0 4.95 0l2.5-2.5a3.5 3.5 0 0 0-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 0 1 0-2.83l2.5-2.5a2 2 0 0 1 2.83 0 .75.75 0 0 0 1.06-1.06 3.5 3.5 0 0 0-4.95 0l-2.5 2.5a3.5 3.5 0 0 0 4.95 4.95l1.25-1.25a.75.75 0 0 0-1.06-1.06l-1.25 1.25a2 2 0 0 1-2.83 0z"/></svg></a></h2>
+                    <p>Welcome! If you're looking to send and receive text messages through SignalWire, you've come to the right place. This guide is designed specifically for customers who want to leverage SMS capabilities without needing to write complex code or have a development background.</p>
+                    <p>Whether you're running a small business that needs to receive customer inquiries via text, managing appointment reminders, or building communication workflows, SignalWire makes it possible to handle SMS in ways that fit your specific needs—even if you've never worked with messaging APIs before.</p>
+
+                    <div class="article-callout callout-warning">
+                        <span class="callout-icon">&#9888;&#65039;</span>
+                        <div class="callout-content">
+                            <strong>Before You Begin: Number Eligibility</strong>
+                            <p>Before your SignalWire phone numbers can send and receive SMS messages, they need to go through certain verification processes. Specifically:</p>
+                            <ul>
+                                <li><strong>10DLC numbers</strong> (standard local numbers) require registration through the <a href="https://signalwire.com/docs/platform/messaging/campaign-registry" target="_blank" rel="noopener noreferrer">Campaign Registry</a></li>
+                                <li><strong>Toll-free numbers</strong> require <a href="https://signalwire.com/docs/platform/messaging/toll-free-numbers" target="_blank" rel="noopener noreferrer">Toll-Free Verification</a></li>
+                            </ul>
+                            <p>These processes help carriers prevent spam and ensure legitimate business use of SMS. For detailed information on how to complete these verification steps, please refer to our <a href="https://signalwire.com/docs/platform/messaging/campaign-registry" target="_blank" rel="noopener noreferrer">Campaign Registry Documentation</a> and <a href="https://signalwire.com/docs/platform/messaging/toll-free-numbers" target="_blank" rel="noopener noreferrer">Toll-Free Verification Documentation</a>.</p>
+                        </div>
+                    </div>
+
+                    <p>Once your numbers are verified and approved, you're ready to start using SMS! This guide will focus on the practical side: what you can actually <em>do</em> with incoming and outgoing text messages.</p>
+                </section>
+
+                <br><br>
+
+                <!-- Two approaches -->
+                <section id="two-approaches">
+                    <h2>Understanding Your Options: Two Main Approaches<a href="#two-approaches" class="heading-anchor" aria-label="Link to Two Main Approaches"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M7.775 3.275a.75.75 0 0 0 1.06 1.06l1.25-1.25a2 2 0 1 1 2.83 2.83l-2.5 2.5a2 2 0 0 1-2.83 0 .75.75 0 0 0-1.06 1.06 3.5 3.5 0 0 0 4.95 0l2.5-2.5a3.5 3.5 0 0 0-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 0 1 0-2.83l2.5-2.5a2 2 0 0 1 2.83 0 .75.75 0 0 0 1.06-1.06 3.5 3.5 0 0 0-4.95 0l-2.5 2.5a3.5 3.5 0 0 0 4.95 4.95l1.25-1.25a.75.75 0 0 0-1.06-1.06l-1.25 1.25a2 2 0 0 1-2.83 0z"/></svg></a></h2>
+                    <p>When it comes to handling incoming SMS messages with SignalWire, there are two primary approaches, each suited to different needs:</p>
+
+                    <div class="approach-cards">
+                        <div class="approach-card">
+                            <div class="approach-number">1</div>
+                            <h3>Simple SMS Forwarding</h3>
+                            <p>When someone texts your SignalWire number, that message gets automatically forwarded to your personal cell phone (or multiple phones). You receive it just like any other text message and can reply directly.</p>
+                            <p class="approach-best-for">Best for: small teams, low volume, minimal setup</p>
+                        </div>
+                        <div class="approach-card">
+                            <div class="approach-number">2</div>
+                            <h3>Platform Integration via Webhooks</h3>
+                            <p>Instead of forwarding messages to a phone, you connect incoming SMS to other platforms—CRMs, helpdesks, custom apps. Build automated workflows, store history, trigger actions based on content.</p>
+                            <p class="approach-best-for">Best for: businesses, automation, CRM integration</p>
+                        </div>
+                    </div>
+
+                    <p>Let's explore each approach in depth.</p>
+                </section>
+<br><br>
+
+                <!-- Forwarding -->
+                <section id="forwarding">
+                    <h2>Use Case 1: Forwarding Incoming SMS to Your Personal Phone<a href="#forwarding" class="heading-anchor" aria-label="Link to SMS Forwarding"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M7.775 3.275a.75.75 0 0 0 1.06 1.06l1.25-1.25a2 2 0 1 1 2.83 2.83l-2.5 2.5a2 2 0 0 1-2.83 0 .75.75 0 0 0-1.06 1.06 3.5 3.5 0 0 0 4.95 0l2.5-2.5a3.5 3.5 0 0 0-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 0 1 0-2.83l2.5-2.5a2 2 0 0 1 2.83 0 .75.75 0 0 0 1.06-1.06 3.5 3.5 0 0 0-4.95 0l-2.5 2.5a3.5 3.5 0 0 0 4.95 4.95l1.25-1.25a.75.75 0 0 0-1.06-1.06l-1.25 1.25a2 2 0 0 1-2.83 0z"/></svg></a></h2>
+                    <p><strong>Who this is for:</strong> Business owners, solo practitioners, small teams, or anyone who simply wants to receive text messages on their personal device without complexity.</p>
+                    <p><strong>How it works:</strong> When someone sends a text to your SignalWire number, SignalWire automatically forwards that message to one or more cell phone numbers you specify. You receive the text just like any other message, but when you reply from your personal phone, your response is sent from your personal phone number—not your SignalWire business number.</p>
+
+                    <section id="forwarding-setup">
+                        <h3>Setting Up SMS Forwarding<a href="#forwarding-setup" class="heading-anchor" aria-label="Link to Setting Up SMS Forwarding"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M7.775 3.275a.75.75 0 0 0 1.06 1.06l1.25-1.25a2 2 0 1 1 2.83 2.83l-2.5 2.5a2 2 0 0 1-2.83 0 .75.75 0 0 0-1.06 1.06 3.5 3.5 0 0 0 4.95 0l2.5-2.5a3.5 3.5 0 0 0-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 0 1 0-2.83l2.5-2.5a2 2 0 0 1 2.83 0 .75.75 0 0 0 1.06-1.06 3.5 3.5 0 0 0-4.95 0l-2.5 2.5a3.5 3.5 0 0 0 4.95 4.95l1.25-1.25a.75.75 0 0 0-1.06-1.06l-1.25 1.25a2 2 0 0 1-2.83 0z"/></svg></a></h3>
+                        <p>SignalWire uses <strong>cXML (compatibility XML)</strong> scripts to automate this forwarding process. These are pre-built scripts you can use without writing any code yourself.</p>
+
+                        <div class="steps-list">
+                            <div class="step-item">
+                                <div class="step-number">1</div>
+                                <div class="step-content">
+                                    <h4>Copy the forwarding script</h4>
+                                    <p>Use the cXML script below. It automatically captures the sender's number, your SignalWire number, and the message body, then forwards it to your personal mobile number.</p>
+                                    <div class="article-code-block">
+                                        <code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;Response&gt;
+    &lt;Message to="<strong style="color:#93c5fd;">+1xxxxxxxxxx</strong>"&gt;
+        You received a message from: {{From}} to SignalWire number: {{To}}.
+        The message is: "{{Body}}"
+    &lt;/Message&gt;
+&lt;/Response&gt;</code>
+                                    </div>
+                                    <div class="article-callout callout-warning" style="margin-top: 10px;">
+                                        <span class="callout-icon">&#9888;&#65039;</span>
+                                        <div class="callout-content">
+                                            <strong>Update the <code>to</code> number</strong>
+                                            <p>Replace <code>+1xxxxxxxxxx</code> with your personal mobile number in E.164 format (e.g. <code>+12125551234</code>). This is the number that will receive the forwarded messages.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-number">2</div>
+                                <div class="step-content">
+                                    <h4>Create a cXML Resource in your SignalWire Space</h4>
+                                    <p>In your SignalWire dashboard, go to <strong>My Resources</strong> and add a new resource. Select <strong>Script &rarr; cXML</strong>, set it to handle <strong>Messaging</strong>, choose <strong>Inline Script</strong>, and paste your updated script.</p>
+                                </div>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-number">3</div>
+                                <div class="step-content">
+                                    <h4>Attach the resource to your phone number</h4>
+                                    <p>Go to <strong>Phone Numbers</strong>, select your SignalWire number, scroll to the <strong>Messaging</strong> section, and assign the resource you just created.</p>
+                                </div>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-number">4</div>
+                                <div class="step-content">
+                                    <h4>Done!</h4>
+                                    <p>Incoming texts will now be forwarded automatically. Setup typically takes under 5 minutes.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="article-callout callout-success">
+                            <span class="callout-icon">&#10003;</span>
+                            <div class="callout-content">
+                                <strong>Benefits of SMS Forwarding</strong>
+                                <ul>
+                                    <li>No technical knowledge required</li>
+                                    <li>Receive texts on the device you already use</li>
+                                    <li>Reply directly from your phone</li>
+                                    <li>Quick setup — usually under 5 minutes</li>
+                                    <li>Perfect for low-volume messaging needs</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="forwarding-limits">
+                        <h3>Limitations to Consider<a href="#forwarding-limits" class="heading-anchor" aria-label="Link to Limitations"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M7.775 3.275a.75.75 0 0 0 1.06 1.06l1.25-1.25a2 2 0 1 1 2.83 2.83l-2.5 2.5a2 2 0 0 1-2.83 0 .75.75 0 0 0-1.06 1.06 3.5 3.5 0 0 0 4.95 0l2.5-2.5a3.5 3.5 0 0 0-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 0 1 0-2.83l2.5-2.5a2 2 0 0 1 2.83 0 .75.75 0 0 0 1.06-1.06 3.5 3.5 0 0 0-4.95 0l-2.5 2.5a3.5 3.5 0 0 0 4.95 4.95l1.25-1.25a.75.75 0 0 0-1.06-1.06l-1.25 1.25a2 2 0 0 1-2.83 0z"/></svg></a></h3>
+                        <div class="article-callout callout-warning">
+                            <span class="callout-icon">&#9888;&#65039;</span>
+                            <div class="callout-content">
+                                <strong>Important limitations of SMS forwarding</strong>
+                                <ul>
+                                    <li>Limited automation capabilities</li>
+                                    <li>No integration with other business tools</li>
+                                    <li>No centralized message history</li>
+                                    <li>Harder to manage with a team</li>
+                                    <li><strong>Replies come from your personal phone number, not your business number</strong> — recipients see your personal number, not your SignalWire number</li>
+                                    <li><strong>Not ideal if maintaining the business number in conversations matters</strong> — forwarding won't preserve that</li>
+                                    <li><strong>Not suitable for professional customer service</strong> — if you need two-way conversations on your business number, use webhooks instead</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <p>If you need more sophisticated functionality—like integrating with your CRM, triggering automated responses, building custom workflows, or maintaining professional two-way conversations under your business phone number—explore the webhook approach below.</p>
+                    </section>
+                </section>
+<br><br>
+
+
+                <!-- Webhooks -->
+                <section id="webhooks">
+                    <h2>Use Case 2: Integrating SMS into Platforms and Applications<a href="#webhooks" class="heading-anchor" aria-label="Link to Webhooks"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M7.775 3.275a.75.75 0 0 0 1.06 1.06l1.25-1.25a2 2 0 1 1 2.83 2.83l-2.5 2.5a2 2 0 0 1-2.83 0 .75.75 0 0 0-1.06 1.06 3.5 3.5 0 0 0 4.95 0l2.5-2.5a3.5 3.5 0 0 0-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 0 1 0-2.83l2.5-2.5a2 2 0 0 1 2.83 0 .75.75 0 0 0 1.06-1.06 3.5 3.5 0 0 0-4.95 0l-2.5 2.5a3.5 3.5 0 0 0 4.95 4.95l1.25-1.25a.75.75 0 0 0-1.06-1.06l-1.25 1.25a2 2 0 0 1-2.83 0z"/></svg></a></h2>
+                    <p><strong>Who this is for:</strong> Businesses that want to integrate SMS into their existing software systems, build automated workflows, or create custom messaging experiences.</p>
+                    <p><strong>Common scenarios include:</strong></p>
+                    <ul>
+                        <li>Sending incoming SMS messages to your CRM (Salesforce, HubSpot, Zoho)</li>
+                        <li>Routing messages to your helpdesk or ticketing system (Zendesk, Freshdesk)</li>
+                        <li>Building custom applications that respond to text messages automatically</li>
+                        <li>Creating workflows that trigger actions based on message content</li>
+                        <li>Storing and analyzing message data in your own database</li>
+                        <li>Managing team-based SMS conversations through a unified platform</li>
+                    </ul>
+
+                    <p>For these use cases, you'll use <strong>webhooks</strong>. While this sounds technical, the concept is straightforward, and SignalWire makes it easy to set up.</p>
+
+                    <section id="what-is-webhook">
+                        <h3>What Is a Webhook?<a href="#what-is-webhook" class="heading-anchor" aria-label="Link to What Is a Webhook?"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M7.775 3.275a.75.75 0 0 0 1.06 1.06l1.25-1.25a2 2 0 1 1 2.83 2.83l-2.5 2.5a2 2 0 0 1-2.83 0 .75.75 0 0 0-1.06 1.06 3.5 3.5 0 0 0 4.95 0l2.5-2.5a3.5 3.5 0 0 0-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 0 1 0-2.83l2.5-2.5a2 2 0 0 1 2.83 0 .75.75 0 0 0 1.06-1.06 3.5 3.5 0 0 0-4.95 0l-2.5 2.5a3.5 3.5 0 0 0 4.95 4.95l1.25-1.25a.75.75 0 0 0-1.06-1.06l-1.25 1.25a2 2 0 0 1-2.83 0z"/></svg></a></h3>
+                        <p>Think of a webhook as a notification system. When something happens (like receiving an incoming text message), SignalWire immediately sends information about that event to a web address (URL) that you specify. This is called an "HTTP callback."</p>
+
+                        <div class="article-callout callout-info">
+                            <span class="callout-icon">&#128161;</span>
+                            <div class="callout-content">
+                                <strong>Why webhooks are more powerful than polling</strong>
+                                <p>Unlike traditional methods where your application would constantly "check" SignalWire for new messages, webhooks deliver information <em>instantly</em> as events happen. This means real-time delivery (within milliseconds), no wasted resources, and easy scalability to high message volumes.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="status-callbacks">
+                        <h3>Status Callbacks: The Dual Purpose of Webhooks<a href="#status-callbacks" class="heading-anchor" aria-label="Link to Status Callbacks"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M7.775 3.275a.75.75 0 0 0 1.06 1.06l1.25-1.25a2 2 0 1 1 2.83 2.83l-2.5 2.5a2 2 0 0 1-2.83 0 .75.75 0 0 0-1.06 1.06 3.5 3.5 0 0 0 4.95 0l2.5-2.5a3.5 3.5 0 0 0-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 0 1 0-2.83l2.5-2.5a2 2 0 0 1 2.83 0 .75.75 0 0 0 1.06-1.06 3.5 3.5 0 0 0-4.95 0l-2.5 2.5a3.5 3.5 0 0 0 4.95 4.95l1.25-1.25a.75.75 0 0 0-1.06-1.06l-1.25 1.25a2 2 0 0 1-2.83 0z"/></svg></a></h3>
+                        <p>Webhooks don't just receive incoming messages — they can also receive <strong>status callbacks</strong>, which are updates about the delivery status of outgoing messages you've sent.</p>
+
+                        <div class="dual-purpose-cards">
+                            <div class="dual-purpose-card">
+                                <div class="dual-purpose-icon">&#128709;</div>
+                                <h4>Incoming Messages</h4>
+                                <p>When someone texts your SignalWire number, the message content and metadata are sent to your webhook in real time.</p>
+                            </div>
+                            <div class="dual-purpose-card">
+                                <div class="dual-purpose-icon">&#9989;</div>
+                                <h4>Delivery Receipts (DLR)</h4>
+                                <p>When you send an outgoing SMS, you get status updates confirming whether the message was delivered, failed, or is still in progress.</p>
+                            </div>
+                        </div>
+                    </section>
+                </section>
+
+         <br><br>
+
+                <!-- Setup -->
+                <section id="setup">
+                    <h2>Setting Up Your Webhook in SignalWire<a href="#setup" class="heading-anchor" aria-label="Link to Setup"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M7.775 3.275a.75.75 0 0 0 1.06 1.06l1.25-1.25a2 2 0 1 1 2.83 2.83l-2.5 2.5a2 2 0 0 1-2.83 0 .75.75 0 0 0-1.06 1.06 3.5 3.5 0 0 0 4.95 0l2.5-2.5a3.5 3.5 0 0 0-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 0 1 0-2.83l2.5-2.5a2 2 0 0 1 2.83 0 .75.75 0 0 0 1.06-1.06 3.5 3.5 0 0 0-4.95 0l-2.5 2.5a3.5 3.5 0 0 0 4.95 4.95l1.25-1.25a.75.75 0 0 0-1.06-1.06l-1.25 1.25a2 2 0 0 1-2.83 0z"/></svg></a></h2>
+                    <p>SignalWire uses a two-step process: first you create a Resource that contains your webhook configuration, then you attach that Resource to your phone number.</p>
+
+                    <div class="article-callout callout-info">
+                        <span class="callout-icon">&#128274;</span>
+                        <div class="callout-content">
+                            <strong>Prerequisites</strong>
+                            <ul>
+                                <li>A webhook URL endpoint that can receive HTTP POST requests</li>
+                                <li>The URL must be publicly accessible on the internet</li>
+                                <li>Must use HTTPS (secure connection)</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <section id="create-resource">
+                        <h3>Step 1: Create Your Webhook Resource<a href="#create-resource" class="heading-anchor" aria-label="Link to Create Resource"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M7.775 3.275a.75.75 0 0 0 1.06 1.06l1.25-1.25a2 2 0 1 1 2.83 2.83l-2.5 2.5a2 2 0 0 1-2.83 0 .75.75 0 0 0-1.06 1.06 3.5 3.5 0 0 0 4.95 0l2.5-2.5a3.5 3.5 0 0 0-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 0 1 0-2.83l2.5-2.5a2 2 0 0 1 2.83 0 .75.75 0 0 0 1.06-1.06 3.5 3.5 0 0 0-4.95 0l-2.5 2.5a3.5 3.5 0 0 0 4.95 4.95l1.25-1.25a.75.75 0 0 0-1.06-1.06l-1.25 1.25a2 2 0 0 1-2.83 0z"/></svg></a></h3>
+
+                        <div class="steps-list">
+                            <div class="step-item">
+                                <div class="step-number">1</div>
+                                <div class="step-content">
+                                    <h4>Log into Your SignalWire Space</h4>
+                                    <p>Navigate to your SignalWire dashboard and sign in with your credentials.</p>
+                                </div>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-number">2</div>
+                                <div class="step-content">
+                                    <h4>Navigate to My Resources</h4>
+                                    <p>From the main dashboard, locate and click on "My Resources" in the navigation menu.</p>
+                                    <img src="https://images.type.ai/img_ATTUlI7nSYmbwWJ999.jpg" alt="My Resources navigation in SignalWire dashboard" class="article-image">
+                                </div>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-number">3</div>
+                                <div class="step-content">
+                                    <h4>Add a New Resource</h4>
+                                    <p>Click the "Add" button to create a new resource.</p>
+                                </div>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-number">4</div>
+                                <div class="step-content">
+                                    <h4>Select Script Type</h4>
+                                    <p>When prompted to choose a resource type, select "Script."</p>
+                                </div>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-number">5</div>
+                                <div class="step-content">
+                                    <h4>Choose SWML</h4>
+                                    <p>Select "SWML" (SignalWire Markup Language). Use cXML only if your integration specifically requires it.</p>
+                                </div>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-number">6</div>
+                                <div class="step-content">
+                                    <h4>Configure the Resource Settings</h4>
+                                    <ul>
+                                        <li><strong>Used For:</strong> Select "Messaging"</li>
+                                        <li><strong>Handle Calls Using:</strong> Select "External URL"</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-number">7</div>
+                                <div class="step-content">
+                                    <h4>Enter Your Webhook URLs</h4>
+                                    <ul>
+                                        <li><strong>Primary Script URL:</strong> Paste your webhook URL here. This is where incoming messages will be sent.</li>
+                                        <li><strong>Status Change Webhook:</strong> Paste the same webhook URL here. This is where delivery receipts will be sent.</li>
+                                    </ul>
+                                    <p>You can use the same URL for both fields, or different URLs if you want to handle them separately. Both must begin with <code>https://</code>.</p>
+                                </div>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-number">8</div>
+                                <div class="step-content">
+                                    <h4>Create the Resource</h4>
+                                    <p>Click "Create" to save your new webhook resource.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="attach-resource">
+                        <h3>Step 2: Attach the Resource to Your Phone Number<a href="#attach-resource" class="heading-anchor" aria-label="Link to Attach Resource"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M7.775 3.275a.75.75 0 0 0 1.06 1.06l1.25-1.25a2 2 0 1 1 2.83 2.83l-2.5 2.5a2 2 0 0 1-2.83 0 .75.75 0 0 0-1.06 1.06 3.5 3.5 0 0 0 4.95 0l2.5-2.5a3.5 3.5 0 0 0-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 0 1 0-2.83l2.5-2.5a2 2 0 0 1 2.83 0 .75.75 0 0 0 1.06-1.06 3.5 3.5 0 0 0-4.95 0l-2.5 2.5a3.5 3.5 0 0 0 4.95 4.95l1.25-1.25a.75.75 0 0 0-1.06-1.06l-1.25 1.25a2 2 0 0 1-2.83 0z"/></svg></a></h3>
+
+                        <div class="steps-list">
+                            <div class="step-item">
+                                <div class="step-number">9</div>
+                                <div class="step-content">
+                                    <h4>Navigate to Phone Numbers</h4>
+                                    <p>From the main dashboard, go to the "Phone Numbers" section.</p>
+                                    <img src="https://images.type.ai/img_liLdnXyg48JVC8g9tm.jpg" alt="Phone Numbers section in SignalWire dashboard" class="article-image">
+                                </div>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-number">10</div>
+                                <div class="step-content">
+                                    <h4>Select Your Phone Number</h4>
+                                    <p>Click on the specific phone number you want to configure for SMS webhook integration.</p>
+                                </div>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-number">11</div>
+                                <div class="step-content">
+                                    <h4>Locate the Messaging Section</h4>
+                                    <p>Scroll down to find the "Messaging" section on the phone number configuration page.</p>
+                                    <img src="https://images.type.ai/img_1HAA40nuANEuXlV9SV.jpg" alt="Messaging section on phone number configuration page" class="article-image">
+                                </div>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-number">12</div>
+                                <div class="step-content">
+                                    <h4>Add Your Resource</h4>
+                                    <p>In the Messaging section, select the webhook resource you just created from the dropdown.</p>
+                                </div>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-number">13</div>
+                                <div class="step-content">
+                                    <h4>Save Your Configuration</h4>
+                                    <p>Click "Save" or "Update" to apply your webhook configuration to this phone number.</p>
+                                </div>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-number">14</div>
+                                <div class="step-content">
+                                    <h4>Test Your Webhook</h4>
+                                    <p>Send a test message to your SignalWire number from your personal phone. If everything is configured correctly, your webhook should receive the message data within seconds.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="article-callout callout-info">
+                            <span class="callout-icon">&#128221;</span>
+                            <div class="callout-content">
+                                <strong>Important Notes</strong>
+                                <ul>
+                                    <li><strong>HTTPS is required:</strong> HTTP URLs will not work.</li>
+                                    <li><strong>Authentication:</strong> If your endpoint requires an API key, check your third-party integration docs for how to pass it.</li>
+                                    <li><strong>Response time:</strong> Your endpoint should respond within 10 seconds or the request may time out.</li>
+                                    <li><strong>Reusing resources:</strong> Once created, a webhook resource can be attached to multiple phone numbers without recreating it.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </section>
+                </section>
+<br><br>
+           
+
+                <!-- Webhook deep dive -->
+                <section id="webhook-purposes">
+                    <h2>Webhook Purposes: A Deep Dive<a href="#webhook-purposes" class="heading-anchor" aria-label="Link to Webhook Purposes"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M7.775 3.275a.75.75 0 0 0 1.06 1.06l1.25-1.25a2 2 0 1 1 2.83 2.83l-2.5 2.5a2 2 0 0 1-2.83 0 .75.75 0 0 0-1.06 1.06 3.5 3.5 0 0 0 4.95 0l2.5-2.5a3.5 3.5 0 0 0-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 0 1 0-2.83l2.5-2.5a2 2 0 0 1 2.83 0 .75.75 0 0 0 1.06-1.06 3.5 3.5 0 0 0-4.95 0l-2.5 2.5a3.5 3.5 0 0 0 4.95 4.95l1.25-1.25a.75.75 0 0 0-1.06-1.06l-1.25 1.25a2 2 0 0 1-2.83 0z"/></svg></a></h2>
+                    <p>Now that your webhook is configured, let's explore what data you'll receive and when. Your webhook serves two distinct purposes: receiving incoming messages and receiving delivery status updates for outgoing messages.</p>
+
+                    <section id="incoming-sms">
+                        <h3>Purpose 1: Receiving Incoming SMS Messages<a href="#incoming-sms" class="heading-anchor" aria-label="Link to Incoming SMS"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M7.775 3.275a.75.75 0 0 0 1.06 1.06l1.25-1.25a2 2 0 1 1 2.83 2.83l-2.5 2.5a2 2 0 0 1-2.83 0 .75.75 0 0 0-1.06 1.06 3.5 3.5 0 0 0 4.95 0l2.5-2.5a3.5 3.5 0 0 0-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 0 1 0-2.83l2.5-2.5a2 2 0 0 1 2.83 0 .75.75 0 0 0 1.06-1.06 3.5 3.5 0 0 0-4.95 0l-2.5 2.5a3.5 3.5 0 0 0 4.95 4.95l1.25-1.25a.75.75 0 0 0-1.06-1.06l-1.25 1.25a2 2 0 0 1-2.83 0z"/></svg></a></h3>
+                        <p>When someone sends a text message to your SignalWire number, SignalWire immediately sends an HTTP POST request to your webhook URL with all the relevant information about that message.</p>
+
+                        <h4>What Data You Receive</h4>
+                        <ul>
+                            <li><strong>From:</strong> The phone number that sent the message (E.164 format, e.g. <code>+12125551234</code>)</li>
+                            <li><strong>To:</strong> Your SignalWire phone number that received the message</li>
+                            <li><strong>Body:</strong> The actual text content of the message</li>
+                            <li><strong>MessageSid:</strong> A unique identifier for this specific message</li>
+                            <li><strong>AccountSid:</strong> Your SignalWire account identifier</li>
+                            <li><strong>NumMedia / MediaUrl:</strong> Count and URLs for any attached media (MMS)</li>
+                            <li><strong>Timestamp:</strong> When the message was received</li>
+                        </ul>
+
+                        <h4>Example Incoming Message Payload</h4>
+                        <div class="article-code-block">
+                            <code>{
+  "From": "+12125551234",
+  "To": "+13105555678",
+  "Body": "Hello, I'd like to schedule an appointment",
+  "MessageSid": "SM1234567890abcdef1234567890abcdef",
+  "AccountSid": "AC1234567890abcdef1234567890abcdef",
+  "NumMedia": "0",
+  "FromCity": "NEW YORK",
+  "FromState": "NY",
+  "FromZip": "10001",
+  "FromCountry": "US"
+}</code>
+                        </div>
+
+                        <h4>What You Can Do With This Data</h4>
+                        <ul>
+                            <li>Display the message in your CRM or helpdesk interface</li>
+                            <li>Store the message in your database for record-keeping</li>
+                            <li>Trigger automated responses based on message content or keywords</li>
+                            <li>Route the message to the appropriate team member or department</li>
+                            <li>Create a new support ticket or customer record</li>
+                            <li>Send notifications to your team via email or Slack</li>
+                            <li>Analyze message sentiment or extract important information</li>
+                        </ul>
+
+                        <div class="article-callout callout-info">
+                            <span class="callout-icon">&#128172;</span>
+                            <div class="callout-content">
+                                <strong>Responding to Incoming Messages</strong>
+                                <p>Most third-party integrations handle this for you. If you're building a custom solution, you have two options: (1) use cXML or SWML instructions in your webhook response to reply directly, or (2) use SignalWire's REST API to send a reply message programmatically.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="delivery-receipts">
+                        <h3>Purpose 2: Receiving Delivery Receipts (DLR)<a href="#delivery-receipts" class="heading-anchor" aria-label="Link to Delivery Receipts"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M7.775 3.275a.75.75 0 0 0 1.06 1.06l1.25-1.25a2 2 0 1 1 2.83 2.83l-2.5 2.5a2 2 0 0 1-2.83 0 .75.75 0 0 0-1.06 1.06 3.5 3.5 0 0 0 4.95 0l2.5-2.5a3.5 3.5 0 0 0-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 0 1 0-2.83l2.5-2.5a2 2 0 0 1 2.83 0 .75.75 0 0 0 1.06-1.06 3.5 3.5 0 0 0-4.95 0l-2.5 2.5a3.5 3.5 0 0 0 4.95 4.95l1.25-1.25a.75.75 0 0 0-1.06-1.06l-1.25 1.25a2 2 0 0 1-2.83 0z"/></svg></a></h3>
+                        <p>When you send an outgoing SMS through SignalWire, you probably want to know whether that message was successfully delivered. SignalWire tracks its journey through the carrier network and sends status updates to your webhook as the message status changes.</p>
+
+                        <h4>Message Status Lifecycle</h4>
+
+                        <div class="status-lifecycle">
+                            <div class="status-step">
+                                <span class="status-badge status-queued">Queued</span>
+                                <p>Accepted &amp; queued</p>
+                            </div>
+                            <span class="status-arrow">&rarr;</span>
+                            <div class="status-step">
+                                <span class="status-badge status-sending">Sending</span>
+                                <p>Transmitting to carrier</p>
+                            </div>
+                            <span class="status-arrow">&rarr;</span>
+                            <div class="status-step">
+                                <span class="status-badge status-sent">Sent</span>
+                                <p>Carrier accepted</p>
+                            </div>
+                            <span class="status-arrow">&rarr;</span>
+                            <div class="status-step">
+                                <span class="status-badge status-delivered">Delivered</span>
+                                <p>Confirmed on device</p>
+                            </div>
+                        </div>
+                        <div class="status-failure-row">
+                            <span class="status-arrow" style="transform: none;">&#8627;</span>
+                            <span class="status-badge status-failed">Failed</span>
+                            <span class="status-badge status-undelivered">Undelivered</span>
+                            <p style="font-size: 0.875rem; color: var(--sw-gray-medium);">if delivery could not be completed</p>
+                        </div>
+
+                        <h4>What Data You Receive in Status Callbacks</h4>
+                        <ul>
+                            <li><strong>MessageSid:</strong> Matches the ID from when you originally sent the message</li>
+                            <li><strong>MessageStatus:</strong> Current status (delivered, failed, undelivered, etc.)</li>
+                            <li><strong>To / From:</strong> Recipient and sender phone numbers</li>
+                            <li><strong>ErrorCode / ErrorMessage:</strong> If the message failed, a code and description of why</li>
+                            <li><strong>Timestamp:</strong> When this status update occurred</li>
+                        </ul>
+
+                        <h4>Example Delivery Receipt Payload</h4>
+                        <div class="article-code-block">
+                            <code>{
+  "MessageSid": "SM1234567890abcdef1234567890abcdef",
+  "MessageStatus": "delivered",
+  "To": "+12125551234",
+  "From": "+13105555678",
+  "AccountSid": "AC1234567890abcdef1234567890abcdef",
+  "EventType": "message-status"
+}</code>
+                        </div>
+
+                        <h4>Why Delivery Receipts Matter</h4>
+                        <ul>
+                            <li><strong>Confirming successful delivery:</strong> Know that your important messages actually reached recipients</li>
+                            <li><strong>Identifying delivery issues:</strong> Quickly spot problems with specific numbers or carriers</li>
+                            <li><strong>Compliance and record-keeping:</strong> Maintain proof of message delivery for regulatory purposes</li>
+                            <li><strong>Customer service:</strong> Verify whether a customer received a message they claim they didn't get</li>
+                            <li><strong>Automated retry logic:</strong> Automatically resend messages that failed to deliver</li>
+                        </ul>
+
+                        <h4>Distinguishing Incoming Messages from Status Callbacks</h4>
+                        <p>Since both types of data arrive at the same webhook URL, check for these fields to tell them apart:</p>
+                        <ul>
+                            <li><strong>Incoming messages</strong> will have a <code>Body</code> field containing the message text</li>
+                            <li><strong>Status callbacks</strong> will have a <code>MessageStatus</code> field and typically an <code>EventType</code> field set to <code>"message-status"</code></li>
+                        </ul>
+                    </section>
+                </section>
+<br><br>
+          
+
+                <!-- Troubleshooting -->
+                <section id="troubleshooting">
+                    <h2>Common Webhook Errors and Troubleshooting<a href="#troubleshooting" class="heading-anchor" aria-label="Link to Troubleshooting"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M7.775 3.275a.75.75 0 0 0 1.06 1.06l1.25-1.25a2 2 0 1 1 2.83 2.83l-2.5 2.5a2 2 0 0 1-2.83 0 .75.75 0 0 0-1.06 1.06 3.5 3.5 0 0 0 4.95 0l2.5-2.5a3.5 3.5 0 0 0-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 0 1 0-2.83l2.5-2.5a2 2 0 0 1 2.83 0 .75.75 0 0 0 1.06-1.06 3.5 3.5 0 0 0-4.95 0l-2.5 2.5a3.5 3.5 0 0 0 4.95 4.95l1.25-1.25a.75.75 0 0 0-1.06-1.06l-1.25 1.25a2 2 0 0 1-2.83 0z"/></svg></a></h2>
+                    <p>While webhook configurations are generally straightforward, issues can occasionally occur. For a comprehensive guide to common webhook errors, detailed explanations of what went wrong, and step-by-step solutions, please refer to SignalWire's <a href="https://signalwire.com/docs/compatibility-api/guides/common-webhook-errors" target="_blank" rel="noopener noreferrer">Common Webhook Errors documentation</a>. This resource covers everything from timeout errors to SSL certificate issues and best practices to keep your webhooks running smoothly.</p>
+                </section>
+
+                
+
+                <!-- Conclusion -->
+                <section id="conclusion">
+                    <h2>Conclusion<a href="#conclusion" class="heading-anchor" aria-label="Link to Conclusion"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M7.775 3.275a.75.75 0 0 0 1.06 1.06l1.25-1.25a2 2 0 1 1 2.83 2.83l-2.5 2.5a2 2 0 0 1-2.83 0 .75.75 0 0 0-1.06 1.06 3.5 3.5 0 0 0 4.95 0l2.5-2.5a3.5 3.5 0 0 0-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 0 1 0-2.83l2.5-2.5a2 2 0 0 1 2.83 0 .75.75 0 0 0 1.06-1.06 3.5 3.5 0 0 0-4.95 0l-2.5 2.5a3.5 3.5 0 0 0 4.95 4.95l1.25-1.25a.75.75 0 0 0-1.06-1.06l-1.25 1.25a2 2 0 0 1-2.83 0z"/></svg></a></h2>
+                    <p>You now have a comprehensive understanding of how to use SMS with SignalWire, whether you need simple message forwarding or sophisticated platform integration.</p>
+
+                    <div class="article-callout callout-success">
+                        <span class="callout-icon">&#9989;</span>
+                        <div class="callout-content">
+                            <strong>To recap</strong>
+                            <ul>
+                                <li><strong>For simple needs:</strong> Use SWML scripts to forward incoming SMS to your personal phone with minimal setup</li>
+                                <li><strong>For integration needs:</strong> Use webhooks to connect SMS with your applications and platforms</li>
+                                <li><strong>Webhooks serve dual purposes:</strong> They receive both incoming messages and delivery status updates for outgoing messages</li>
+                                <li><strong>Proper configuration is crucial:</strong> Follow the setup steps carefully and use HTTPS with valid SSL certificates</li>
+                                <li><strong>Troubleshooting is straightforward:</strong> Most webhook errors fall into common categories with well-known solutions</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <p>Whether you're just getting started with SMS or building sophisticated messaging workflows, SignalWire provides the flexibility and power you need. If you encounter issues not covered in this guide, don't hesitate to reach out to SignalWire support.</p>
+
+                    <p>Happy messaging!</p>
+                </section>
+
+                <div class="article-footer-nav">
+                    <a href="../kb.html" class="article-back-btn">
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                            <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+                        </svg>
+                        Back to Knowledge Base
+                    </a>
+                </div>
+
+            </article>
+        </div>
+
+        <footer class="landing-footer">
+            <div class="footer-content">
+                <a href="https://github.com/briankwest/signalwire-api-tools" target="_blank" rel="noopener noreferrer" class="github-link">
+                    <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
+                    </svg>
+                    View on GitHub
+                </a>
+                <p class="footer-text">Built for the SignalWire community</p>
+            </div>
+        </footer>
+    </div>
+    <div class="heading-anchor-tooltip" id="anchor-tooltip"></div>
+
+    <script>
+        const tooltip = document.getElementById('anchor-tooltip');
+        let tooltipTimer;
+
+        document.querySelectorAll('.heading-anchor').forEach(anchor => {
+            anchor.addEventListener('click', e => {
+                e.preventDefault();
+                const url = window.location.href.split('#')[0] + anchor.getAttribute('href');
+                navigator.clipboard.writeText(url).catch(() => {});
+                history.replaceState(null, '', anchor.getAttribute('href'));
+
+                const rect = anchor.getBoundingClientRect();
+                tooltip.textContent = 'Link copied!';
+                tooltip.style.left = rect.left + 'px';
+                tooltip.style.top = (rect.bottom + 6) + 'px';
+                tooltip.classList.add('visible');
+
+                clearTimeout(tooltipTimer);
+                tooltipTimer = setTimeout(() => tooltip.classList.remove('visible'), 1800);
+            });
+        });
+    </script>
+</body>
+</html>

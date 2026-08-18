@@ -56,11 +56,13 @@ exports.handler = async (event, context) => {
       direction: record.direction || '',
       price: record.price || '',
       body: record.body || '',
-      numSegments: record.numSegments || ''
+      numSegments: record.numSegments || '',
+      errorCode: record.errorCode || record.error_code || '',
+      errorMessage: record.errorMessage || record.error_message || ''
     }));
 
     // Create CSV content
-    const headers = ['Message SID', 'From', 'To', 'Date Sent', 'Status', 'Direction', 'Price', 'Body', 'Number of Segments'];
+    const headers = ['Message SID', 'From', 'To', 'Date Sent', 'Status', 'Direction', 'Price', 'Body', 'Number of Segments', 'Error Code', 'Error Message'];
     const csvContent = [
       headers.join(','),
       ...data.map(row => [
@@ -71,13 +73,15 @@ exports.handler = async (event, context) => {
         `"${row.status}"`,
         `"${row.direction}"`,
         `"${row.price}"`,
-        `"${row.body.replace(/"/g, '""')}"`, // Escape quotes in message body
-        `"${row.numSegments}"`
+        `"${row.body.replace(/"/g, '""')}"`,
+        `"${row.numSegments}"`,
+        `"${row.errorCode}"`,
+        `"${row.errorMessage.replace(/"/g, '""')}"`
       ].join(','))
     ].join('\n');
 
     // Create filename with project name and API type
-    const filename = `Messages_${cleanProjectName}.csv`;
+    const filename = `Messages-${cleanProjectName}.csv`;
 
     return {
       statusCode: 200,

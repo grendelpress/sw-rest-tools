@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configure E911 for a SignalWire Phone Number</title>
+    <meta name="description" content="Learn how to create and assign E911 emergency addresses to your SignalWire phone numbers from your Space or through the REST API.">
+    <link rel="stylesheet" href="../style.css">
+    <style>
+
+    </style>
+</head>
+<body class="landing-page">
+    <a href="../kb.html" class="back-to-hub">
+        <svg viewBox="0 0 16 16" fill="currentColor">
+            <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+        </svg>
+        Knowledge Base
+    </a>
+
+    <div class="landing-container">
+        <header class="landing-header">
+            <div class="header-content">
+                <div class="article-header-meta">
+                    <span class="kb-category-pill voice">Voice</span>
+                    <span class="kb-level-pill intermediate">Intermediate</span>
+                </div>
+                <h1 class="landing-title" style="font-size: 2rem;">Configure E911 for a SignalWire Phone Number</h1>
+                <p class="landing-subtitle">Create and assign emergency addresses so 911 calls route to the right help</p>
+            </div>
+        </header>
+
+        <div class="article-page-layout">
+            <aside class="article-toc">
+                <div class="toc-inner">
+                    <h4 class="toc-heading">On this page</h4>
+                    <nav aria-label="Table of contents">
+                        <ol class="toc-list">
+                            <li><a href="#introduction" class="toc-link">Introduction</a></li>
+                            <li>
+                                <a href="#create-address" class="toc-link">Create an E911 Address</a>
+                            </li>
+                            <li>
+                                <a href="#assign-address" class="toc-link">Assign the Address to a Phone Number</a>
+                            </li>
+                            <li><a href="#provisioning-warnings" class="toc-link">Provisioning &amp; Important Warnings</a></li>
+                            <li>
+                                <a href="#rest-api" class="toc-link">Configure E911 Through the REST API</a>
+                                <ol class="toc-sublist">
+                                    <li><a href="#api-status-flow" class="toc-link">Provisioning Status Flow</a></li>
+                                </ol>
+                            </li>
+                        </ol>
+                    </nav>
+                </div>
+            </aside>
+
+            <article class="article-body">
+
+                <!-- Introduction -->
+                <section id="introduction">
+                    <h2>Introduction<a href="#introduction" class="heading-anchor" aria-label="Link to Introduction"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M7.775 3.275a.75.75 0 0 0 1.06 1.06l1.25-1.25a2 2 0 1 1 2.83 2.83l-2.5 2.5a2 2 0 0 1-2.83 0 .75.75 0 0 0-1.06 1.06 3.5 3.5 0 0 0 4.95 0l2.5-2.5a3.5 3.5 0 0 0-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 0 1 0-2.83l2.5-2.5a2 2 0 0 1 2.83 0 .75.75 0 0 0 1.06-1.06 3.5 3.5 0 0 0-4.95 0l-2.5 2.5a3.5 3.5 0 0 0 4.95 4.95l1.25-1.25a.75.75 0 0 0-1.06-1.06l-1.25 1.25a2 2 0 0 1-2.83 0z"/></svg></a></h2>
+                    <p>SignalWire allows you to create and assign E911 addresses directly from your Space. The assigned address is provided to emergency services when someone calls 911 from that phone number.</p>
+                    <p>The process has two parts: you must first <strong>create</strong> the emergency address, then <strong>assign</strong> it to each applicable phone number. Creating an address alone does not enable E911 on any number.</p>
+                </section>
+
+                <br><br>
+
+                <!-- Create an E911 address -->
+                <section id="create-address">
+                    <h2>Create an E911 Address<a href="#create-address" class="heading-anchor" aria-label="Link to Create an E911 Address"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M7.775 3.275a.75.75 0 0 0 1.06 1.06l1.25-1.25a2 2 0 1 1 2.83 2.83l-2.5 2.5a2 2 0 0 1-2.83 0 .75.75 0 0 0-1.06 1.06 3.5 3.5 0 0 0 4.95 0l2.5-2.5a3.5 3.5 0 0 0-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 0 1 0-2.83l2.5-2.5a2 2 0 0 1 2.83 0 .75.75 0 0 0 1.06-1.06 3.5 3.5 0 0 0-4.95 0l-2.5 2.5a3.5 3.5 0 0 0 4.95 4.95l1.25-1.25a.75.75 0 0 0-1.06-1.06l-1.25 1.25a2 2 0 0 1-2.83 0z"/></svg></a></h2>
+
+                    <div class="steps-list">
+                        <div class="step-item">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <h4>Log in to your SignalWire Space</h4>
+                                <p>Sign in to your SignalWire dashboard with your credentials.</p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <h4>Select Addresses from the left navigation menu</h4>
+                                <p>From the main dashboard, open the <strong>Addresses</strong> section.</p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <h4>Click + New</h4>
+                                <p>Create a new emergency address entry.</p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">4</div>
+                            <div class="step-content">
+                                <h4>Enter a label and the complete physical address</h4>
+                                <p>Provide a label and the full physical address where the phone number will be used.</p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">5</div>
+                            <div class="step-content">
+                                <h4>Submit the address</h4>
+                                <p>Submit the address for validation. It must be validated before it can be assigned for E911 service.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <figure style="margin: 12px 0 6px 0;">
+                        <img src="e911Address.png" alt="SignalWire Space showing the Addresses page with no addresses created and an Add an address button" class="article-image">
+                        <figcaption style="font-size: 0.85rem; color: var(--sw-gray-medium); margin-top: 6px;">The Addresses page in your SignalWire Space. Click <strong>Add an address</strong> to create a new E911 address.</figcaption>
+                    </figure>
+
+                    <div class="article-callout callout-info">
+                        <span class="callout-icon">&#128205;</span>
+                        <div class="callout-content">
+                            <strong>Use a complete and accurate address</strong>
+                            <p>Include any applicable apartment, suite, floor, or unit number. The address must be validated before it can be assigned for E911 service.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <br><br>
+
+                <!-- Assign the address to a phone number -->
+                <section id="assign-address">
+                    <h2>Assign the Address to a Phone Number<a href="#assign-address" class="heading-anchor" aria-label="Link to Assign the Address"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M7.775 3.275a.75.75 0 0 0 1.06 1.06l1.25-1.25a2 2 0 1 1 2.83 2.83l-2.5 2.5a2 2 0 0 1-2.83 0 .75.75 0 0 0-1.06 1.06 3.5 3.5 0 0 0 4.95 0l2.5-2.5a3.5 3.5 0 0 0-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 0 1 0-2.83l2.5-2.5a2 2 0 0 1 2.83 0 .75.75 0 0 0 1.06-1.06 3.5 3.5 0 0 0-4.95 0l-2.5 2.5a3.5 3.5 0 0 0 4.95 4.95l1.25-1.25a.75.75 0 0 0-1.06-1.06l-1.25 1.25a2 2 0 0 1-2.83 0z"/></svg></a></h2>
+                    <p>Creating an address does not automatically enable E911 for your phone numbers. You must assign the address to each number separately.</p>
+
+                    <div class="steps-list">
+                        <div class="step-item">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <h4>Select Phone Numbers from the left navigation menu</h4>
+                                <p>From the main dashboard, go to the <strong>Phone Numbers</strong> section.</p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <h4>Open the phone number you want to configure</h4>
+                                <p>Click on the specific phone number to open its settings.</p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <h4>Go to the number's E911 settings</h4>
+                                <p>Navigate to the <strong>E911</strong> section on the phone number configuration page.</p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">4</div>
+                            <div class="step-content">
+                                <h4>Locate the appropriate emergency address</h4>
+                                <p>Find the emergency address you created earlier from the list of available addresses.</p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">5</div>
+                            <div class="step-content">
+                                <h4>Click Assign &amp; provision</h4>
+                                <p>This submits the address to the carrier for provisioning.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <figure style="margin: 12px 0 6px 0;">
+                        <img src="Number_Settings.png" alt="Phone number settings page in SignalWire Space showing the Set E911 Address section with a warning about the $100 per call charge" class="article-image">
+                        <figcaption style="font-size: 0.85rem; color: var(--sw-gray-medium); margin-top: 6px;">The phone number settings page showing the <strong>Set E911 Address</strong> section. Click <strong>Set E911 Address</strong> to assign an emergency address to this number.</figcaption>
+                    </figure>
+                </section>
+
+                <br><br>
+
+                <!-- Provisioning and warnings -->
+                <section id="provisioning-warnings">
+                    <h2>Provisioning &amp; Important Warnings<a href="#provisioning-warnings" class="heading-anchor" aria-label="Link to Provisioning and Warnings"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M7.775 3.275a.75.75 0 0 0 1.06 1.06l1.25-1.25a2 2 0 1 1 2.83 2.83l-2.5 2.5a2 2 0 0 1-2.83 0 .75.75 0 0 0-1.06 1.06 3.5 3.5 0 0 0 4.95 0l2.5-2.5a3.5 3.5 0 0 0-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 0 1 0-2.83l2.5-2.5a2 2 0 0 1 2.83 0 .75.75 0 0 0 1.06-1.06 3.5 3.5 0 0 0-4.95 0l-2.5 2.5a3.5 3.5 0 0 0 4.95 4.95l1.25-1.25a.75.75 0 0 0-1.06-1.06l-1.25 1.25a2 2 0 0 1-2.83 0z"/></svg></a></h2>
+                    <p>The address will be submitted to the carrier for provisioning. Provisioning may not complete immediately. Do not consider E911 active until the number's E911 status shows that provisioning has completed successfully.</p>
+
+                    <div class="article-callout callout-warning">
+                        <span class="callout-icon">&#9888;&#65039;</span>
+                        <div class="callout-content">
+                            <strong>Emergency calls may be billed at $100 before provisioning</strong>
+                            <p>Until an emergency address is assigned and provisioned, 911 calls from the number may be routed through a national emergency call center and billed at <strong>$100 per call</strong>.</p>
+                        </div>
+                    </div>
+
+                    <div class="article-callout callout-info">
+                        <span class="callout-icon">&#128205;</span>
+                        <div class="callout-content">
+                            <strong>Update the address if the number moves</strong>
+                            <p>If the phone number moves to a different physical location, update or replace its assigned E911 address promptly.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <br><br>
+
+                <!-- REST API -->
+                <section id="rest-api">
+                    <h2>Configure E911 Through the REST API<a href="#rest-api" class="heading-anchor" aria-label="Link to REST API"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M7.775 3.275a.75.75 0 0 0 1.06 1.06l1.25-1.25a2 2 0 1 1 2.83 2.83l-2.5 2.5a2 2 0 0 1-2.83 0 .75.75 0 0 0-1.06 1.06 3.5 3.5 0 0 0 4.95 0l2.5-2.5a3.5 3.5 0 0 0-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 0 1 0-2.83l2.5-2.5a2 2 0 0 1 2.83 0 .75.75 0 0 0 1.06-1.06 3.5 3.5 0 0 0-4.95 0l-2.5 2.5a3.5 3.5 0 0 0 4.95 4.95l1.25-1.25a.75.75 0 0 0-1.06-1.06l-1.25 1.25a2 2 0 0 1-2.83 0z"/></svg></a></h2>
+                    <p>You can also create and manage E911 addresses programmatically through the SignalWire REST API:</p>
+                    <ul>
+                        <li><a href="https://signalwire.com/docs/apis/rest/phone-numbers/create-e-911-address" target="_blank" rel="noopener noreferrer">Create an E911 address</a></li>
+                        <li><a href="https://signalwire.com/docs/apis/rest/phone-numbers/assign-e-911-address" target="_blank" rel="noopener noreferrer">Assign an E911 address to a phone number</a></li>
+                    </ul>
+
+                    <section id="api-status-flow">
+                        <h3>Provisioning Status Flow<a href="#api-status-flow" class="heading-anchor" aria-label="Link to Provisioning Status Flow"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M7.775 3.275a.75.75 0 0 0 1.06 1.06l1.25-1.25a2 2 0 1 1 2.83 2.83l-2.5 2.5a2 2 0 0 1-2.83 0 .75.75 0 0 0-1.06 1.06 3.5 3.5 0 0 0 4.95 0l2.5-2.5a3.5 3.5 0 0 0-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 0 1 0-2.83l2.5-2.5a2 2 0 0 1 2.83 0 .75.75 0 0 0 1.06-1.06 3.5 3.5 0 0 0-4.95 0l-2.5 2.5a3.5 3.5 0 0 0 4.95 4.95l1.25-1.25a.75.75 0 0 0-1.06-1.06l-1.25 1.25a2 2 0 0 1-2.83 0z"/></svg></a></h3>
+                        <p>When assigning an address through the API, provisioning begins with a <strong>pending</strong> status. The status changes to <strong>active</strong> after the carrier confirms the registration. If the carrier cannot complete the registration, the status changes to <strong>failed</strong>.</p>
+
+                        <div class="status-lifecycle">
+                            <div class="status-step">
+                                <span class="status-badge status-sending">Pending</span>
+                                <p>Provisioning started</p>
+                            </div>
+                            <span class="status-arrow">&rarr;</span>
+                            <div class="status-step">
+                                <span class="status-badge status-delivered">Active</span>
+                                <p>Carrier confirmed</p>
+                            </div>
+                        </div>
+                        <div class="status-failure-row">
+                            <span class="status-arrow" style="transform: none;">&#8627;</span>
+                            <span class="status-badge status-failed">Failed</span>
+                            <p style="font-size: 0.875rem; color: var(--sw-gray-medium);">if the carrier cannot complete the registration</p>
+                        </div>
+
+                        <div class="article-callout callout-info">
+                            <span class="callout-icon">&#128279;</span>
+                            <div class="callout-content">
+                                <strong>API documentation</strong>
+                                <p>For full reference details, see the <a href="https://signalwire.com/docs/apis/rest/phone-numbers/assign-e-911-address" target="_blank" rel="noopener noreferrer">Assign an E911 address</a> API documentation.</p>
+                            </div>
+                        </div>
+                    </section>
+                </section>
+
+                <div class="article-footer-nav">
+                    <a href="../kb.html" class="article-back-btn">
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                            <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+                        </svg>
+                        Back to Knowledge Base
+                    </a>
+                </div>
+
+            </article>
+        </div>
+
+        <footer class="landing-footer">
+            <div class="footer-content">
+                <a href="https://github.com/briankwest/signalwire-api-tools" target="_blank" rel="noopener noreferrer" class="github-link">
+                    <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
+                    </svg>
+                    View on GitHub
+                </a>
+                <p class="footer-text">Built for the SignalWire community</p>
+            </div>
+        </footer>
+    </div>
+    <div class="heading-anchor-tooltip" id="anchor-tooltip"></div>
+
+    <script>
+        const tooltip = document.getElementById('anchor-tooltip');
+        let tooltipTimer;
+
+        document.querySelectorAll('.heading-anchor').forEach(anchor => {
+            anchor.addEventListener('click', e => {
+                e.preventDefault();
+                const url = window.location.href.split('#')[0] + anchor.getAttribute('href');
+                navigator.clipboard.writeText(url).catch(() => {});
+                history.replaceState(null, '', anchor.getAttribute('href'));
+
+                const rect = anchor.getBoundingClientRect();
+                tooltip.textContent = 'Link copied!';
+                tooltip.style.left = rect.left + 'px';
+                tooltip.style.top = (rect.bottom + 6) + 'px';
+                tooltip.classList.add('visible');
+
+                clearTimeout(tooltipTimer);
+                tooltipTimer = setTimeout(() => tooltip.classList.remove('visible'), 1800);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -3,146 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SignalWire API Tools</title>
+    <title>SignalWire Support Tools - Developer Resources</title>
+    <meta name="description" content="A collection of tools to help you work with SignalWire services including API data export, SWML IVR Builder, and TextFlow SMS platform.">
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
-    <div class="container">
-        <h1>SignalWire API Tools</h1>
-        <form id="credentialsForm">
-            <div class="form-group">
-                <label for="projectId">Project ID:</label>
-                <input type="text" id="projectId" required>
+<body class="landing-page">
+    <div class="landing-container">
+        <header class="landing-header">
+            <div class="header-content">
+                <h1 class="landing-title">SignalWire Support Tools</h1>
+                <p class="landing-subtitle">A collection of tools to help you work with SignalWire services</p>
             </div>
-            <div class="form-group">
-                <label for="authToken">Auth Token:</label>
-                <input type="password" id="authToken" required>
-            </div>
-            <div class="form-group">
-                <label for="spaceUrl">Space URL:</label>
-                <input type="text" id="spaceUrl" required>
-                <small>yourspace.signalwire.com</small>
-            </div>
-            <div class="button-group">
-                <button type="submit">Save Credentials</button>
-                <button type="button" id="clearBtn" class="secondary">Clear Credentials</button>
-            </div>
-        </form>
-        
-        <div id="dateRangeSection" class="date-range-section hidden">
-            <h2>Date Range Filter (Optional)</h2>
-            <div class="date-range-controls">
-                <div class="date-group">
-                    <label for="startDate">Start Date:</label>
-                    <input type="date" id="startDate">
-                </div>
-                <div class="date-group">
-                    <label for="endDate">End Date:</label>
-                    <input type="date" id="endDate">
-                </div>
-                <div class="date-presets">
-                    <button type="button" class="preset-btn" data-days="1">Yesterday</button>
-                    <button type="button" class="preset-btn" data-days="7">Last 7 Days</button>
-                    <button type="button" class="preset-btn" data-days="30">Last 30 Days</button>
-                    <button type="button" class="preset-btn" data-days="90">Last 90 Days</button>
-                    <button type="button" id="clearDatesBtn" class="preset-btn clear">Clear Dates</button>
-                </div>
-            </div>
-        </div>
-        
-        <div id="apiLinks">
-            <h2>Available APIs</h2>
-            <div class="api-list">
-                <a href="#" class="api-link" data-endpoint="/generate-numbers-csv">
-                    <h3>Phone Numbers</h3>
-                    <p>View and download a CSV of all your phone numbers</p>
-                </a>
-                <a href="#" class="api-link" data-endpoint="/generate-messages-csv">
-                    <h3>Messages</h3>
-                    <p>View and download a CSV of all your messages</p>
-                </a>
-                <a href="#" class="api-link" data-endpoint="/generate-faxes-csv">
-                    <h3>Faxes</h3>
-                    <p>View and download a CSV of all your faxes</p>
-                </a>
-                <a href="#" class="api-link" data-endpoint="/generate-calls-csv">
-                    <h3>Calls</h3>
-                    <p>View and download a CSV of all your calls</p>
-                </a>
-                <a href="#" class="api-link" data-endpoint="/generate-recordings-csv">
-                    <h3>Recordings</h3>
-                    <p>View and download a CSV of all your recordings</p>
-                </a>
-            </div>
-        </div>
-        <div id="status" class="hidden">
-            <div class="spinner"></div>
-            <p>Processing request...</p>
-        </div>
-        <div id="dataDisplay" class="hidden">
-            <div class="data-header">
-                <div class="header-top">
-                    <h2 id="dataTitle">Data Results</h2>
-                    <button id="backBtn" class="back-button">← Back to Menu</button>
-                </div>
-                
-                <!-- Analytics Section -->
-                <div id="analyticsSection" class="analytics-section">
-                    <div class="analytics-toggle">
-                        <button id="toggleAnalyticsBtn" class="analytics-toggle-btn">
-                            📊 Show Analytics
-                        </button>
+        </header>
+
+        <main class="landing-main">
+            <section class="tools-section">
+                <div class="tools-grid">
+                    <div class="tool-card">
+                        <div class="tool-icon">📊</div>
+                        <h2 class="tool-title">SignalWire API Tools</h2>
+                        <p class="tool-description">Export your SignalWire data to CSV files. Download phone numbers, messages, faxes, calls, recordings, and LaML bins with advanced filtering and analytics.</p>
+                        <div class="tool-features">
+                            <span class="feature-badge">Data Export</span>
+                            <span class="feature-badge">Analytics</span>
+                            <span class="feature-badge">Filtering</span>
+                        </div>
+                        <a href="api-tools.html" class="tool-button primary">Launch API Tools</a>
                     </div>
-                    <div id="analyticsContainer" class="analytics-container hidden"></div>
-                </div>
-                
-                <div class="combined-controls">
-                    <div class="filter-section">
-                        <h3>Filter & Search</h3>
-                        <div class="filter-row">
-                            <div class="date-inputs">
-                                <div class="date-group">
-                                    <label for="filterStartDate">Start Date:</label>
-                                    <input type="date" id="filterStartDate">
-                                </div>
-                                <div class="date-group">
-                                    <label for="filterEndDate">End Date:</label>
-                                    <input type="date" id="filterEndDate">
-                                </div>
-                            </div>
-                            <div class="search-section">
-                                <label for="searchInput">Search:</label>
-                                <input type="text" id="searchInput" placeholder="Search all fields...">
-                            </div>
+
+                    <div class="tool-card">
+                        <div class="tool-icon">🔧</div>
+                        <h2 class="tool-title">SWML IVR Helper</h2>
+                        <p class="tool-description">Interactive tool for building and testing SignalWire Markup Language (SWML) for your voice and messaging applications.</p>
+                        <div class="tool-features">
+                            <span class="feature-badge">SWML Builder</span>
+                            <span class="feature-badge">Testing</span>
+                            <span class="feature-badge">Interactive</span>
                         </div>
-                        <div class="filter-actions">
-                            <div class="date-presets">
-                                <button type="button" class="preset-btn" data-days="1">Yesterday</button>
-                                <button type="button" class="preset-btn" data-days="7">Last 7 Days</button>
-                                <button type="button" class="preset-btn" data-days="30">Last 30 Days</button>
-                                <button type="button" class="preset-btn" data-days="90">Last 90 Days</button>
-                                <button type="button" id="clearFiltersBtn" class="preset-btn clear">Clear All</button>
-                            </div>
-                            <div class="action-buttons">
-                                <button id="downloadFilteredBtn" class="secondary">Download Filtered CSV</button>
-                            </div>
+                        <a href="https://swml-helper.netlify.app" target="_blank" rel="noopener noreferrer" class="tool-button primary">Launch SWML Helper</a>
+                    </div>
+
+                    <div class="tool-card">
+                        <span class="new-badge">New!</span>
+                        <div class="tool-icon">💬</div>
+                        <h2 class="tool-title">TextFlow</h2>
+                        <p class="tool-description">A self-hosted SMS platform built on Supabase and SignalWire. Send and receive texts, manage multiple numbers, automate responses with templates, track opt-outs for TCPA compliance, and forward events via webhooks.</p>
+                        <p class="feedback-invite">Have feedback? <a href="https://github.com/grendelpress/TextFlow/issues" target="_blank" rel="noopener noreferrer">Open an issue on GitHub</a></p>
+                        <div class="tool-features">
+                            <span class="feature-badge">SMS</span>
+                            <span class="feature-badge">Self-Hosted</span>
+                            <span class="feature-badge">Webhooks</span>
                         </div>
+                        <a href="https://github.com/grendelpress/TextFlow" target="_blank" rel="noopener noreferrer" class="tool-button primary">View on GitHub</a>
                     </div>
                 </div>
-                <div class="data-info">
-                    <span id="recordCount">0 records</span>
-                    <span id="filteredCount" class="hidden">0 filtered results</span>
+            </section>
+
+
+
+            <section class="info-section">
+                <div class="info-card">
+                    <h3>Getting Started</h3>
+                    <p>Choose a tool above to get started. Each tool is designed to help you work more efficiently with SignalWire services.</p>
                 </div>
+
+                <div class="info-card">
+                    <h3>About These Tools</h3>
+                    <p>These tools are built to complement SignalWire's powerful communication platform. They provide additional functionality for data management, testing, and development workflows.</p>
+                </div>
+            </section>
+          <br> <br>
+            <section class="kb-landing-section">
+                <div class="kb-section-header">
+                    <h2 class="kb-section-title">Helpful Guides</h2> 
+                    <p class="kb-section-subtitle">Guides and articles for working with SignalWire</p>
+                    <a href="kb.html" class="kb-section-view-all">View all articles &rarr;</a>
+                </div>
+                <div class="kb-preview-grid">
+                    <div class="kb-preview-card">
+                        <div class="kb-card-meta">
+                            <span class="kb-category-pill sms">SMS</span>
+                            <span class="kb-level-pill beginner">Beginner</span>
+                        </div>
+                        <h3 class="kb-card-title">A Beginner's Guide to Using SMS with SignalWire</h3>
+                        <p class="kb-card-excerpt">Learn how to send and receive SMS — from simple message forwarding to full webhook integration with your CRM or application. No coding background required.</p>
+                        <a href="kb/sms-beginners-guide.html" class="kb-read-link">Read Article &rarr;</a>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="landing-footer">
+            <div class="footer-content">
+                <a href="https://github.com/briankwest/signalwire-api-tools" target="_blank" rel="noopener noreferrer" class="github-link">
+                    <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
+                    </svg>
+                    View on GitHub
+                </a>
+                <p class="footer-text">Built for the SignalWire community</p>
             </div>
-            <div id="dataTableContainer">
-                <table id="dataTable">
-                    <thead id="dataTableHead"></thead>
-                    <tbody id="dataTableBody"></tbody>
-                </table>
-            </div>
-        </div>
-        <div id="download" class="hidden"></div>
+        </footer>
     </div>
-    <script type="module" src="js/app.js"></script>
 </body>
 </html>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledge Base - SignalWire Support Tools</title>
+    <meta name="description" content="Helpful guides and articles for working with SignalWire services.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="landing-page">
+    <a href="index.html" class="back-to-hub">
+        <svg viewBox="0 0 16 16" fill="currentColor">
+            <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+        </svg>
+        Back to Hub
+    </a>
+
+    <div class="landing-container">
+        <header class="landing-header">
+            <div class="header-content">
+                <h1 class="landing-title">Knowledge Base</h1>
+                <p class="landing-subtitle">Helpful guides and articles for working with SignalWire services</p>
+            </div>
+        </header>
+
+        <main class="landing-main">
+            <section class="kb-index-section">
+                <div class="kb-filter-row">
+                    <span class="kb-filter-label">Browse by category:</span>
+                    <div class="kb-category-filters">
+                        <button class="kb-filter-btn active" data-category="all">All</button>
+                        <button class="kb-filter-btn" data-category="sms">SMS</button>
+                        <button class="kb-filter-btn" data-category="voice">Voice</button>
+                        <button class="kb-filter-btn" data-category="general">General</button>
+                    </div>
+                </div>
+
+                <div class="kb-articles-grid" id="kb-articles-grid">
+                    <div class="kb-article-card" data-category="sms">
+                        <div class="kb-card-meta">
+                            <span class="kb-category-pill sms">SMS</span>
+                            <span class="kb-level-pill beginner">Beginner</span>
+                        </div>
+                        <h2 class="kb-card-title">A Beginner's Guide to Using SMS with SignalWire</h2>
+                        <p class="kb-card-excerpt">Learn how to send and receive SMS with SignalWire — from simple message forwarding to webhook integration with your CRM or custom application. No coding background required.</p>
+                        <a href="kb/sms-beginners-guide.html" class="kb-read-link">Read Article &rarr;</a>
+                    </div>
+
+                    <div class="kb-article-card" data-category="voice">
+                        <div class="kb-card-meta">
+                            <span class="kb-category-pill voice">Voice</span>
+                            <span class="kb-level-pill intermediate">Intermediate</span>
+                        </div>
+                        <h2 class="kb-card-title">Configure E911 for a SignalWire Phone Number</h2>
+                        <p class="kb-card-excerpt">Create and assign emergency addresses to your SignalWire phone numbers so 911 calls route to the right help — from your Space or through the REST API.</p>
+                        <a href="kb/configure-e911-phone-number.html" class="kb-read-link">Read Article &rarr;</a>
+                    </div>
+
+                    <div class="kb-coming-soon-card">
+                        <div class="coming-soon-icon">&#128196;</div>
+                        <h3>More articles coming soon</h3>
+                        <p>We're working on additional guides covering voice, webhooks, compliance, and more.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="landing-footer">
+            <div class="footer-content">
+                <a href="https://github.com/briankwest/signalwire-api-tools" target="_blank" rel="noopener noreferrer" class="github-link">
+                    <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
+                    </svg>
+                    View on GitHub
+                </a>
+                <p class="footer-text">Built for the SignalWire community</p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        document.querySelectorAll('.kb-filter-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.kb-filter-btn').forEach(function(b) {
+                    b.classList.remove('active');
+                });
+                btn.classList.add('active');
+                var cat = btn.dataset.category;
+                document.querySelectorAll('.kb-article-card').forEach(function(card) {
+                    if (cat === 'all' || card.dataset.category === cat) {
+                        card.style.display = '';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

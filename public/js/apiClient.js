@@ -13,7 +13,13 @@ export class APIClient {
         });
 
         if (!response.ok) {
-            const error = await response.json();
+            let error;
+            try {
+                error = await response.json();
+            } catch {
+                const text = await response.text().catch(() => '');
+                throw new Error(text || `Request failed: ${response.status} ${response.statusText}`);
+            }
             throw new Error(error.error || 'Failed to generate CSV');
         }
 
@@ -26,7 +32,10 @@ export class APIClient {
             '/generate-messages-csv': 'Messages',
             '/generate-faxes-csv': 'Faxes',
             '/generate-calls-csv': 'Calls',
-            '/generate-recordings-csv': 'Recordings'
+            '/generate-relay-calls-csv': 'RELAY Calls',
+            '/generate-recordings-csv': 'Recordings',
+            '/generate-bins-csv': 'Bins',
+            '/test-bins-api': 'Test Bins API'
         };
         return titles[endpoint] || 'Data';
     }

@@ -52,11 +52,13 @@ export class CSVUtils {
         data.forEach(row => {
             const values = headers.map(header => {
                 const value = row[header] || '';
+                // Convert value to string to ensure .includes() method works
+                const stringValue = String(value);
                 // Escape quotes and wrap in quotes if contains comma or quote
-                if (value.includes(',') || value.includes('"') || value.includes('\n')) {
-                    return `"${value.replace(/"/g, '""')}"`;
+                if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
+                    return `"${stringValue.replace(/"/g, '""')}"`;
                 }
-                return value;
+                return stringValue;
             });
             csvRows.push(values.join(','));
         });
@@ -72,12 +74,19 @@ export class CSVUtils {
         
         const headers = Object.keys(data[0]);
         const csvContent = this.arrayToCSV(data, headers);
+        
+        // Ensure filename has .csv extension
+        if (!filename.toLowerCase().endsWith('.csv')) {
+            filename += '.csv';
+        }
+        
         const blob = new Blob([csvContent], { type: 'text/csv' });
         const url = window.URL.createObjectURL(blob);
         
         const a = document.createElement('a');
         a.href = url;
         a.download = filename;
+        a.style.display = 'none';
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);

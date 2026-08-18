@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SignalWire API Tools</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="api-tools-page">
+    <div class="workspace">
+        <!-- Sidebar Navigation -->
+        <aside class="workspace-sidebar" id="workspaceSidebar">
+            <div class="sidebar-header">
+                <h2 class="sidebar-title">API Tools</h2>
+                <button class="sidebar-close" id="sidebarCloseBtn" aria-label="Close menu">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
+                        <path d="M18 6L6 18M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <nav class="sidebar-nav" id="sidebarNav" aria-label="API resources">
+                <a href="#" class="nav-item active" data-view="overview">
+                    <span class="nav-icon">⌂</span>
+                    <span class="nav-label">Overview</span>
+                </a>
+
+                <div class="nav-group" data-group="phone-management">
+                    <button type="button" class="nav-group-toggle" aria-expanded="false">
+                        <span class="nav-group-label">Phone Number Management</span>
+                        <span class="nav-group-chevron">⌄</span>
+                    </button>
+                    <div class="nav-group-items">
+                        <div class="nav-subgroup">
+                            <span class="nav-subgroup-title">Phone Numbers</span>
+                            <div class="nav-subgroup-items">
+                                <button type="button" class="nav-subitem" data-view="phone-numbers" data-target="phone-number-list">
+                                    <span class="method-badge method-get">GET</span>
+                                    <span>List phone numbers</span>
+                                </button>
+                                <button type="button" class="nav-subitem" data-view="phone-numbers" data-target="e911-assign">
+                                    <span class="method-badge method-post">POST</span>
+                                    <span>Assign E911 address to phone number</span>
+                                </button>
+                                <button type="button" class="nav-subitem" data-view="phone-numbers" data-target="phone-number-get">
+                                    <span class="method-badge method-get">GET</span>
+                                    <span>Get phone number</span>
+                                </button>
+                                <button type="button" class="nav-subitem" data-view="phone-numbers" data-target="phone-number-search">
+                                    <span class="method-badge method-get">GET</span>
+                                    <span>Search phone numbers</span>
+                                </button>
+                                <button type="button" class="nav-subitem" data-view="phone-numbers" data-target="phone-number-purchase">
+                                    <span class="method-badge method-post">POST</span>
+                                    <span>Purchase phone number</span>
+                                </button>
+                                <button type="button" class="nav-subitem" data-view="phone-numbers" data-target="phone-number-remove-e911">
+                                    <span class="method-badge method-delete">DEL</span>
+                                    <span>Remove E911 address from phone number</span>
+                                </button>
+                                <button type="button" class="nav-subitem" data-view="phone-numbers" data-target="phone-number-update">
+                                    <span class="method-badge method-put">PUT</span>
+                                    <span>Update phone number</span>
+                                </button>
+                                <button type="button" class="nav-subitem" data-view="phone-numbers" data-target="phone-number-release">
+                                    <span class="method-badge method-delete">DEL</span>
+                                    <span>Release phone number</span>
+                                </button>
+                                <button type="button" class="nav-subitem" data-view="phone-numbers" data-target="phone-number-lookup">
+                                    <span class="method-badge method-get">GET</span>
+                                    <span>Look up phone number</span>
+                                </button>
+                                <button type="button" class="nav-subitem" data-view="phone-numbers" data-target="phone-number-route">
+                                    <span class="method-badge method-post">POST</span>
+                                    <span>Assign resource to phone route</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="nav-subgroup">
+                            <span class="nav-subgroup-title">E911 Addresses</span>
+                            <div class="nav-subgroup-items">
+                                <button type="button" class="nav-subitem" data-view="phone-numbers" data-target="e911-create">
+                                    <span class="method-badge method-post">POST</span>
+                                    <span>Create E911 address</span>
+                                </button>
+                                <button type="button" class="nav-subitem" data-view="phone-numbers" data-target="e911-delete">
+                                    <span class="method-badge method-delete">DEL</span>
+                                    <span>Delete E911 address</span>
+                                </button>
+                                <button type="button" class="nav-subitem" data-view="phone-numbers" data-target="e911-get">
+                                    <span class="method-badge method-get">GET</span>
+                                    <span>Get E911 address</span>
+                                </button>
+                                <button type="button" class="nav-subitem" data-view="phone-numbers" data-target="e911-list">
+                                    <span class="method-badge method-get">GET</span>
+                                    <span>List E911 addresses</span>
+                                </button>
+                                <button type="button" class="nav-subitem" data-view="phone-numbers" data-target="e911-update">
+                                    <span class="method-badge method-put">PUT</span>
+                                    <span>Update E911 address</span>
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="nav-group" data-group="messaging">
+                    <button type="button" class="nav-group-toggle" aria-expanded="false">
+                        <span class="nav-group-label">Messaging</span>
+                        <span class="nav-group-chevron">⌄</span>
+                    </button>
+                    <div class="nav-group-items">
+                        <button type="button" class="nav-subitem" data-view="messaging" data-target="messaging-list">
+                            <span class="method-badge method-get">GET</span>
+                            <span>Messages</span>
+                        </button>
+                        <button type="button" class="nav-subitem" data-view="messaging" data-target="messaging-analytics">
+                            <span class="method-badge method-get">GET</span>
+                            <span>Analytics</span>
+                        </button>
+                        <button type="button" class="nav-subitem" data-view="messaging" data-target="messaging-high-volume">
+                            <span class="method-badge method-get">GET</span>
+                            <span>High-Volume Message Logs</span>
+                        </button>
+                        <button type="button" class="nav-subitem" data-view="messaging" data-target="messaging-faxes">
+                            <span class="method-badge method-get">GET</span>
+                            <span>Faxes</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="nav-group" data-group="calls">
+                    <button type="button" class="nav-group-toggle" aria-expanded="false">
+                        <span class="nav-group-label">Calls</span>
+                        <span class="nav-group-chevron">⌄</span>
+                    </button>
+                    <div class="nav-group-items">
+                        <button type="button" class="nav-subitem" data-view="calls" data-target="calls-laml">
+                            <span class="method-badge method-get">GET</span>
+                            <span>LaML Calls (Legacy)</span>
+                        </button>
+                        <button type="button" class="nav-subitem" data-view="calls" data-target="calls-relay">
+                            <span class="method-badge method-get">GET</span>
+                            <span>RELAY Calls</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="nav-group" data-group="recordings">
+                    <button type="button" class="nav-group-toggle" aria-expanded="false">
+                        <span class="nav-group-label">Recordings</span>
+                        <span class="nav-group-chevron">⌄</span>
+                    </button>
+                    <div class="nav-group-items">
+                        <button type="button" class="nav-subitem" data-view="recordings" data-target="recordings-list">
+                            <span class="method-badge method-get">GET</span>
+                            <span>Recordings</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="nav-group" data-group="bins">
+                    <button type="button" class="nav-group-toggle" aria-expanded="false">
+                        <span class="nav-group-label">cXML Bins</span>
+                        <span class="nav-group-chevron">⌄</span>
+                    </button>
+                    <div class="nav-group-items">
+                        <button type="button" class="nav-subitem" data-view="bins" data-target="bins-list">
+                            <span class="method-badge method-get">GET</span>
+                            <span>cXML Bins</span>
+                        </button>
+                    </div>
+                </div>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="https://github.com/grendelpress/sw-rest-tools" target="_blank" rel="noopener noreferrer" class="sidebar-github-link">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                    </svg>
+                    <span>View on GitHub</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="workspace-main">
+            <!-- Top Navigation Bar -->
+            <nav class="top-nav" id="topBar">
+                <div class="top-nav-left">
+                    <button class="sidebar-toggle" id="sidebarToggleBtn" aria-label="Open menu">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22">
+                            <path d="M3 12h18M3 6h18M3 18h18"/>
+                        </svg>
+                        <span>Menu</span>
+                    </button>
+                </div>
+                <div class="top-nav-links">
+                    <a href="index.html" class="top-nav-link active" aria-current="page">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+                            <path d="M3 3h18v18H3zM3 9h18M9 21V9"/>
+                        </svg>
+                        <span>API Tools Hub</span>
+                    </a>
+                    <a href="https://swml-helper.netlify.app" target="_blank" rel="noopener noreferrer" class="top-nav-link">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/>
+                        </svg>
+                        <span>SWML IVR Helper</span>
+                    </a>
+                    <a href="https://github.com/grendelpress/TextFlow" target="_blank" rel="noopener noreferrer" class="top-nav-link">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                        </svg>
+                        <span>TextFlow</span>
+                    </a>
+                </div>
+                <div class="top-nav-right">
+                    <button class="top-bar-back hidden" id="topBarBackBtn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+                            <path d="M19 12H5M12 19l-7-7 7-7"/>
+                        </svg>
+                        <span>Back to Menu</span>
+                    </button>
+                </div>
+            </nav>
+
+            <!-- Connection Panel (collapsible) -->
+            <section class="connection-panel" id="connectionPanel">
+                <div class="connection-header" id="connectionHeader">
+                    <div class="connection-status">
+                        <span class="status-dot" id="connectionDot"></span>
+                        <span class="status-text" id="connectionStatusText">Not Connected</span>
+                    </div>
+                    <button class="connection-toggle-btn" id="connectionToggleBtn">
+                        <span id="connectionToggleLabel">Show Settings</span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" class="connection-chevron">
+                            <path d="M6 9l6 6 6-6"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="connection-body hidden" id="connectionBody">
+                    <form id="credentialsForm">
+                        <div class="form-group">
+                            <label for="projectId">Project ID</label>
+                            <input type="text" id="projectId" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="authToken">Auth Token</label>
+                            <input type="password" id="authToken" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="spaceUrl">Space URL</label>
+                            <input type="text" id="spaceUrl" required>
+                            <small>yourspace.signalwire.com</small>
+                        </div>
+                        <div class="button-group">
+                            <button type="submit">Save Credentials</button>
+                            <button type="button" id="clearBtn" class="secondary">Clear Credentials</button>
+                        </div>
+                        <div class="privacy-note">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                            </svg>
+                            <span>Your Project ID, Auth Token, and Space URL are stored locally in your browser only.</span>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Category Views -->
+            <div id="viewsContainer" class="views-container">
+                <!-- Overview -->
+                <section class="view view-overview active" data-view="overview">
+                    <h1 class="view-title">SignalWire API Tools</h1>
+                    <p class="view-subtitle">Choose a category from the left to get started, or pick a popular tool below.</p>
+                    <div class="quick-cards">
+                        <a href="#" class="quick-card" data-quick="phone-numbers">
+                            <span class="quick-icon">📞</span>
+                            <span class="quick-title">Phone Numbers</span>
+                            <span class="quick-desc">View and export your numbers</span>
+                        </a>
+                        <a href="#" class="quick-card" data-quick="messaging">
+                            <span class="quick-icon">💬</span>
+                            <span class="quick-title">Messaging</span>
+                            <span class="quick-desc">Messages, analytics, and faxes</span>
+                        </a>
+                        <a href="#" class="quick-card" data-quick="calls">
+                            <span class="quick-icon">☎️</span>
+                            <span class="quick-title">Calls</span>
+                            <span class="quick-desc">LaML and RELAY call records</span>
+                        </a>
+                    </div>
+                </section>
+
+                <!-- Endpoint Page (dynamically populated) -->
+                <section class="view view-endpoint hidden" id="endpointPageView" data-view="endpoint">
+                </section>
+            </div>
+
+            <!-- Date Range Section (shared, shown when a tool runs) -->
+            <div id="dateRangeSection" class="date-range-section hidden">
+                <h2>Date Range Filter (Optional)</h2>
+                <div class="date-range-controls">
+                    <div class="date-group">
+                        <label for="startDate">Start Date:</label>
+                        <input type="date" id="startDate">
+                    </div>
+                    <div class="date-group">
+                        <label for="endDate">End Date:</label>
+                        <input type="date" id="endDate">
+                    </div>
+                    <div class="date-presets">
+                        <button type="button" class="preset-btn" data-days="1">Yesterday</button>
+                        <button type="button" class="preset-btn" data-days="7">Last 7 Days</button>
+                        <button type="button" class="preset-btn" data-days="30">Last 30 Days</button>
+                        <button type="button" class="preset-btn" data-days="90">Last 90 Days</button>
+                        <button type="button" id="clearDatesBtn" class="preset-btn clear">Clear Dates</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Messaging Analytics View -->
+            <div id="messagingAnalyticsView" class="hidden">
+                <div class="analytics-view-header">
+                    <h2>Messaging Analytics</h2>
+                </div>
+
+                <div class="analytics-query-form">
+                    <h3>Query Filters</h3>
+                    <form id="analyticsQueryForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="analyticsToNumber">To Number (E.164 Format):</label>
+                                <input type="text" id="analyticsToNumber" placeholder="+12345678901">
+                                <small class="help-text">Optional: Filter messages sent to this number</small>
+                                <small class="error-text hidden" id="toNumberError"></small>
+                            </div>
+                            <div class="form-group">
+                                <label for="analyticsFromNumber">From Number (E.164 Format):</label>
+                                <input type="text" id="analyticsFromNumber" placeholder="+12345678901">
+                                <small class="help-text">Optional: Filter messages sent from this number</small>
+                                <small class="error-text hidden" id="fromNumberError"></small>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="analyticsStartDate">Start Date:</label>
+                                <input type="date" id="analyticsStartDate">
+                            </div>
+                            <div class="form-group">
+                                <label for="analyticsEndDate">End Date:</label>
+                                <input type="date" id="analyticsEndDate">
+                            </div>
+                        </div>
+                        <div class="date-presets">
+                            <button type="button" class="preset-btn" data-days="30">Last 30 Days</button>
+                            <button type="button" class="preset-btn" data-days="60">Last 60 Days</button>
+                            <button type="button" class="preset-btn" data-days="90">Last 90 Days</button>
+                            <button type="button" class="preset-btn" data-days="120">Last 120 Days</button>
+                            <button type="button" id="clearAnalyticsFiltersBtn" class="preset-btn clear">Clear Filters</button>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="primary-btn">Generate Analytics</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div id="analyticsResultsContainer" class="analytics-results-container hidden"></div>
+            </div>
+
+            <!-- Status -->
+            <div id="status" class="hidden">
+                <div class="spinner"></div>
+                <p>Processing request...</p>
+            </div>
+
+            <!-- Data Display -->
+            <div id="dataDisplay" class="hidden">
+                <div class="data-header">
+                    <div class="header-top">
+                        <h2 id="dataTitle">Data Results</h2>
+                    </div>
+
+                    <!-- Analytics Section -->
+                    <div id="analyticsSection" class="analytics-section">
+                        <div class="analytics-toggle">
+                            <button id="toggleAnalyticsBtn" class="analytics-toggle-btn">
+                                📊 Show Analytics
+                            </button>
+                        </div>
+                        <div id="analyticsContainer" class="analytics-container hidden"></div>
+                    </div>
+
+                    <div class="combined-controls">
+                        <div class="filter-section">
+                            <h3>Filter & Search</h3>
+                            <div class="filter-row">
+                                <div class="date-inputs">
+                                    <div class="date-group">
+                                        <label for="filterStartDate">Start Date:</label>
+                                        <input type="date" id="filterStartDate">
+                                    </div>
+                                    <div class="date-group">
+                                        <label for="filterEndDate">End Date:</label>
+                                        <input type="date" id="filterEndDate">
+                                    </div>
+                                </div>
+                                <div class="search-section">
+                                    <label for="searchInput">Search:</label>
+                                    <input type="text" id="searchInput" placeholder="Search all fields...">
+                                </div>
+                            </div>
+                            <div class="filter-actions">
+                                <div class="date-presets">
+                                    <button type="button" class="preset-btn" data-days="1">Yesterday</button>
+                                    <button type="button" class="preset-btn" data-days="7">Last 7 Days</button>
+                                    <button type="button" class="preset-btn" data-days="30">Last 30 Days</button>
+                                    <button type="button" class="preset-btn" data-days="90">Last 90 Days</button>
+                                    <button type="button" id="clearFiltersBtn" class="preset-btn clear">Clear All</button>
+                                </div>
+                                <div class="action-buttons">
+                                    <button id="downloadOriginalBtn" class="primary">Download All Data</button>
+                                    <button id="downloadFilteredBtn" class="secondary">Download Filtered CSV</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="data-info">
+                        <span id="recordCount">0 records</span>
+                        <span id="filteredCount" class="hidden">0 filtered results</span>
+                    </div>
+                </div>
+                <div id="dataTableContainer">
+                    <table id="dataTable">
+                        <thead id="dataTableHead"></thead>
+                        <tbody id="dataTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div id="download" class="hidden"></div>
+        </main>
+    </div>
+
+    <!-- Mobile sidebar overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>

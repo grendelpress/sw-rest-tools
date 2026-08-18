@@ -8,7 +8,8 @@
     "deploy": "netlify deploy --prod"
   },
   "dependencies": {
-    "@signalwire/compatibility-api": "^3.0.2"
+    "@signalwire/compatibility-api": "^3.0.2",
+    "node-fetch": "^3.3.2"
   },
   "devDependencies": {
     "netlify-cli": "^17.0.0"
